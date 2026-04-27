@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TOMO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100;200;300&family=Noto+Sans+JP:wght@200;300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white: #ffffff;
+      --black: #111;
+      --gray: #aaa;
+      --light-gray: #e4e4e0;
+      --font: 'Josefin Sans', sans-serif;
+      --font-body: 'Noto Sans JP', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--white);
+      color: var(--black);
+      font-family: var(--font-body);
+      font-weight: 200;
+      overflow-x: hidden;
+    }
+
+    .page-top {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 40px;
+      position: relative;
+    }
+
+    .top-logo {
+      font-family: var(--font);
+      font-weight: 100;
+      font-size: clamp(5rem, 22vw, 18rem);
+      letter-spacing: 0.35em;
+      text-indent: 0.35em;
+      line-height: 1;
+      color: var(--black);
+      margin-bottom: 10vh;
+      animation: fadeIn 1.2s ease both;
+    }
+
+    .top-nav {
+      display: flex;
+      gap: clamp(32px, 6vw, 100px);
+      list-style: none;
+      margin-bottom: 10vh;
+      animation: fadeIn 1.2s 0.2s ease both;
+    }
+
+    .top-nav a {
+      font-family: var(--font);
+      font-weight: 200;
+      font-size: clamp(1.1rem, 3vw, 2rem);
+      letter-spacing: 0.18em;
+      text-decoration: none;
+      color: var(--black);
+      transition: color 0.2s;
+    }
+
+    .top-nav a:hover { color: var(--gray); }
+
+    .top-sns {
+      display: flex;
+      gap: 32px;
+      animation: fadeIn 1.2s 0.4s ease both;
+    }
+
+    .sns-btn {
+      width: 56px;
+      height: 56px;
+      border: 2px solid var(--black);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: var(--black);
+      transition: all 0.2s;
+    }
+
+    .sns-btn:hover { background: var(--black); color: var(--white); }
+
+    .sns-btn svg {
+      width: 24px; height: 24px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.5;
+    }
+
+    .lang-toggle {
+      position: fixed;
+      top: 36px; right: 40px;
+      font-family: var(--font);
+      font-weight: 200;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      color: var(--gray);
+      cursor: pointer;
+      border: 1px solid var(--light-gray);
+      background: none;
+      padding: 6px 14px;
+      transition: all 0.2s;
+      z-index: 200;
+    }
+
+    .lang-toggle:hover { color: var(--black); border-color: var(--black); }
+
+    .back-btn {
+      position: fixed;
+      top: 36px; left: 40px;
+      font-family: var(--font);
+      font-weight: 200;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      color: var(--gray);
+      cursor: pointer;
+      background: none;
+      border: none;
+      text-transform: uppercase;
+      transition: color 0.2s;
+      display: none;
+      z-index: 200;
+    }
+
+    .back-btn.visible { display: block; }
+    .back-btn:hover { color: var(--black); }
+
+    .inner-page {
+      display: none;
+      min-height: 100vh;
+      padding: 120px 60px 80px;
+      animation: fadeIn 0.5s ease both;
+    }
+
+    .inner-page.active { display: block; }
+
+    .page-title {
+      font-family: var(--font);
+      font-weight: 100;
+      font-size: clamp(3rem, 10vw, 8rem);
+      letter-spacing: 0.3em;
+      text-indent: 0.3em;
+      margin-bottom: 80px;
+      line-height: 1;
+    }
+
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 48px;
+    }
+
+    .shop-item { cursor: pointer; }
+
+    .shop-img { aspect-ratio: 1; overflow: hidden; background: var(--light-gray); margin-bottom: 16px; }
+    .shop-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; display: block; }
+    .shop-item:hover .shop-img img { transform: scale(1.03); }
+
+    .shop-name { font-family: var(--font); font-weight: 200; font-size: 0.85rem; letter-spacing: 0.1em; margin-bottom: 4px; }
+    .shop-price { font-size: 0.75rem; color: var(--gray); letter-spacing: 0.06em; }
+
+    .about-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+
+    .about-img { aspect-ratio: 4/5; background: var(--light-gray); overflow: hidden; }
+    .about-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .about-text-block p {
+      font-size: 0.85rem;
+      line-height: 2.2;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    .contact-layout { max-width: 600px; }
+    .contact-intro { font-size: 0.85rem; line-height: 2.2; color: #555; margin-bottom: 60px; }
+    .contact-item { margin-bottom: 40px; }
+
+    .contact-label {
+      font-family: var(--font);
+      font-weight: 200;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: var(--gray);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .contact-value { font-size: 0.9rem; letter-spacing: 0.04em; }
+    .contact-value a { color: var(--black); text-decoration: none; border-bottom: 1px solid var(--light-gray); padding-bottom: 2px; transition: border-color 0.2s; }
+    .contact-value a:hover { border-color: var(--black); }
+
+    .painting-gallery {
+      display: flex;
+      flex-direction: column;
+      gap: 100px;
+    }
+
+    .painting-item {
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .painting-img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      background: var(--light-gray);
+      margin-bottom: 20px;
+    }
+
+    .painting-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .painting-caption { padding: 0 4px; }
+
+    .caption-title {
+      font-family: var(--font);
+      font-weight: 200;
+      font-size: 1rem;
+      letter-spacing: 0.12em;
+      margin-bottom: 6px;
+    }
+
+    .caption-meta {
+      font-size: 0.75rem;
+      color: var(--gray);
+      letter-spacing: 0.06em;
+      line-height: 1.8;
+    }
+
+    .painting-item.horizontal .painting-img {
+      aspect-ratio: unset;
+      height: 70vh;
+      width: 100vw;
+      margin-left: calc(-60px);
+      overflow-x: scroll;
+      overflow-y: hidden;
+      cursor: grab;
+      scrollbar-width: none;
+    }
+
+    .painting-item.horizontal .painting-img::-webkit-scrollbar { display: none; }
+    .painting-item.horizontal .painting-img:active { cursor: grabbing; }
+
+    .painting-item.horizontal .painting-img img {
+      height: 100%;
+      width: auto;
+      max-width: none;
+      object-fit: none;
+    }
+
+    .scroll-hint {
+      font-family: var(--font);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--gray);
+      margin-bottom: 12px;
+    }
+
+    .placeholder {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font); font-size: 0.6rem;
+      letter-spacing: 0.2em; color: var(--gray);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 680px) {
+      .top-logo { font-size: clamp(4rem, 22vw, 10rem); }
+      .top-nav { flex-direction: column; align-items: center; gap: 20px; }
+      .inner-page { padding: 100px 24px 60px; }
+      .shop-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+      .about-layout { grid-template-columns: 1fr; }
+      .painting-item.horizontal .painting-img { margin-left: -24px; height: 50vw; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="back-btn" id="backBtn" onclick="showPage('top')">← BACK</button>
+  <button class="lang-toggle" id="langToggle">EN</button>
+
+  <div class="page-top" id="pageTop">
+    <div class="top-logo">TOMO</div>
+    <ul class="top-nav">
+      <li><a href="#" onclick="showPage('painting')">PAINTING</a></li>
+      <li><a href="#" onclick="showPage('news')">NEWS</a></li>
+      <li><a href="#" onclick="showPage('about')">ABOUT</a></li>
+      <li><a href="#" onclick="showPage('contact')">CONTACT</a></li>
+      <li><a href="#" onclick="showPage('links')">LINKS</a></li>
+      <li><a href="#" onclick="showPage('newsletter')">NEWSLETTER</a></li>
+      <li><a href="#" onclick="showPage('shop')">SHOP</a></li>
+    </ul>
+    <div class="top-sns">
+      <a href="https://www.instagram.com" target="_blank" class="sns-btn" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+          <circle cx="12" cy="12" r="4"/>
+          <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
+        </svg>
+      </a>
+      <a href="https://www.youtube.com" target="_blank" class="sns-btn" aria-label="YouTube">
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="4" ry="4"/>
+          <polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="inner-page" id="pagePainting">
+    <div class="page-title">PAINTING</div>
+    <div class="painting-gallery">
+      <div class="painting-item horizontal">
+        <div class="scroll-hint">← SCROLL →</div>
+        <div class="painting-img" id="hScroll">
+          <img src="panel_9.jpg" alt="9 panels">
+        </div>
+        <div class="painting-caption">
+          <div class="caption-title">Untitled — 9 panels</div>
+          <div class="caption-meta">2024 &nbsp;·&nbsp; acrylic on canvas &nbsp;·&nbsp; B1 × 9</div>
+        </div>
+      </div>
+      <div class="painting-item">
+        <div class="painting-img"><div class="placeholder">IMAGE</div></div>
+        <div class="painting-caption">
+          <div class="caption-title">Untitled 01</div>
+          <div class="caption-meta">2024 &nbsp;·&nbsp; acrylic on canvas &nbsp;·&nbsp; 910 × 727 mm</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="inner-page" id="pageNews">
+    <div class="page-title">NEWS</div>
+    <div class="contact-layout">
+      <div class="contact-item">
+        <div class="contact-label">2025.04</div>
+        <div class="contact-value">展示タイトル ／ 会場名、東京</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="inner-page" id="pageAbout">
+    <div class="page-title">ABOUT</div>
+    <div class="about-layout">
+      <div class="about-img"><div class="placeholder">PHOTO</div></div>
+      <div class="about-text-block">
+        <p>TOMOは、ドットと有機的なフォルムを用いた抽象絵画を制作するアーティストです。</p>
+        <p>一つひとつの点が積み重なり、生き物のような形が生まれる。その過程そのものが作品の核にあります。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="inner-page" id="pageContact">
+    <div class="page-title">CONTACT</div>
+    <div class="contact-layout">
+      <p class="contact-intro">展示・依頼・コラボレーションなど、お気軽にご連絡ください。</p>
+      <div class="contact-item"><div class="contact-label">Email</div><div class="contact-value"><a href="mailto:hello@tomoart.space">hello@tomoart.space</a></div></div>
+    </div>
+  </div>
+
+  <div class="inner-page" id="pageLinks">
+    <div class="page-title">LINKS</div>
+    <div class="contact-layout">
+      <div class="contact-item"><div class="contact-label">Instagram</div><div class="contact-value"><a href="https://www.instagram.com/tomoart.space" target="_blank">@tomoart.space</a></div></div>
+      <div class="contact-item"><div class="contact-label">YouTube</div><div class="contact-value"><a href="https://www.youtube.com" target="_blank">TOMO</a></div></div>
+    </div>
+  </div>
+
+  <div class="inner-page" id="pageNewsletter">
+    <div class="page-title">NEWSLETTER</div>
+    <div class="contact-layout">
+      <p class="contact-intro">展示情報や新作のお知らせをお届けします。</p>
+      <div style="display:flex; gap:12px; margin-top:8px;">
+        <input type="email" placeholder="your@email.com" style="flex:1; padding:14px 16px; border:1px solid #e4e4e0; font-family:inherit; font-size:0.85rem; outline:none; background:white;">
+        <button style="padding:14px 28px; background:#111; color:white; border:none; font-family:'Josefin Sans',sans-serif; font-weight:200; font-size:0.75rem; letter-spacing:0.15em; cursor:pointer;">SUBSCRIBE</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="inner-page" id="pageShop">
+    <div class="page-title">SHOP</div>
+    <div class="shop-grid">
+      <div class="shop-item"><div class="shop-img"><div class="placeholder">IMAGE</div></div><div class="shop-name">Dot Form — Red</div><div class="shop-price">¥38,000</div></div>
+      <div class="shop-item"><div class="shop-img"><div class="placeholder">IMAGE</div></div><div class="shop-name">Cluster — Pink × Gray</div><div class="shop-price">¥65,000</div></div>
+      <div class="shop-item"><div class="shop-img"><div class="placeholder">IMAGE</div></div><div class="shop-name">Dot Form — Gray</div><div class="shop-price">¥38,000</div></div>
+    </div>
+  </div>
+
+  <script>
+    const hScroll = document.getElementById('hScroll');
+    if (hScroll) {
+      let isDown = false, startX, scrollLeft;
+      hScroll.addEventListener('mousedown', e => { isDown = true; startX = e.pageX - hScroll.offsetLeft; scrollLeft = hScroll.scrollLeft; });
+      hScroll.addEventListener('mouseleave', () => isDown = false);
+      hScroll.addEventListener('mouseup', () => isDown = false);
+      hScroll.addEventListener('mousemove', e => {
+        if (!isDown) return;
+        e.preventDefault();
+        hScroll.scrollLeft = scrollLeft - (e.pageX - hScroll.offsetLeft - startX);
+      });
+    }
+
+    function showPage(name) {
+      if (event) event.preventDefault();
+      document.getElementById('pageTop').style.display = 'none';
+      document.querySelectorAll('.inner-page').forEach(p => p.classList.remove('active'));
+      const backBtn = document.getElementById('backBtn');
+      if (name === 'top') {
+        document.getElementById('pageTop').style.display = 'flex';
+        backBtn.classList.remove('visible');
+      } else {
+        const map = { painting: 'pagePainting', news: 'pageNews', about: 'pageAbout', contact: 'pageContact', links: 'pageLinks', newsletter: 'pageNewsletter', shop: 'pageShop' };
+        document.getElementById(map[name]).classList.add('active');
+        backBtn.classList.add('visible');
+        window.scrollTo(0, 0);
+      }
+    }
+
+    const toggle = document.getElementById('langToggle');
+    let isEN = false;
+    toggle.addEventListener('click', () => {
+      isEN = !isEN;
+      toggle.textContent = isEN ? 'JA' : 'EN';
+      document.querySelectorAll('[data-ja][data-en]').forEach(el => {
+        el.innerHTML = isEN ? el.dataset.en : el.dataset.ja;
+      });
+    });
+  </script>
+</body>
+</html>
