@@ -50,74 +50,6 @@ body {
   width: 100%;
 }
 
-.signup-wrap {
-  width: 100%;
-  max-width: 420px;
-  animation: fadeUp 1s 0.4s ease both;
-  margin-bottom: 8vh;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.signup {
-  display: flex;
-  gap: 0;
-  width: 100%;
-}
-
-.signup input {
-  flex: 1;
-  padding: 14px 20px;
-  border: 1px solid #ddd;
-  border-right: none;
-  font-family: 'Josefin Sans', sans-serif;
-  font-weight: 200;
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  outline: none;
-  background: white;
-  color: #111;
-  transition: border-color 0.2s;
-}
-
-.signup input:focus { border-color: #111; }
-.signup input::placeholder { color: #bbb; }
-
-.signup button {
-  padding: 14px 24px;
-  background: #111;
-  color: white;
-  border: 1px solid #111;
-  font-family: 'Josefin Sans', sans-serif;
-  font-weight: 200;
-  font-size: 0.7rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.signup button:hover { background: white; color: #111; }
-
-.signup-note {
-  font-size: 0.65rem;
-  color: #bbb;
-  letter-spacing: 0.08em;
-  margin-top: 10px;
-  text-align: center;
-}
-
-.success-msg {
-  display: none;
-  font-family: 'Josefin Sans', sans-serif;
-  font-size: 0.75rem;
-  letter-spacing: 0.15em;
-  color: #111;
-  margin-top: 12px;
-  text-align: center;
-}
-
 .sns {
   display: flex;
   gap: 24px;
@@ -171,15 +103,6 @@ body {
   <div class="logo">TOMO</div>
   <div class="coming-soon">Coming Soon</div>
 
-  <div class="signup-wrap">
-    <div class="signup">
-      <input type="email" id="emailInput" placeholder="your@email.com">
-      <button onclick="handleSignup()">NOTIFY ME</button>
-    </div>
-    <div class="signup-note">新作・展示情報をお届けします</div>
-    <div class="success-msg" id="successMsg">✓ ありがとうございます！</div>
-  </div>
-
   <div class="sns">
     <a href="https://www.instagram.com/tomoart.space" target="_blank" class="sns-btn" aria-label="Instagram">
       <svg viewBox="0 0 24 24">
@@ -200,20 +123,6 @@ body {
       </svg>
     </a>
   </div>
-
-  <script>
-    function handleSignup() {
-      const email = document.getElementById('emailInput').value;
-      if (!email || !email.includes('@')) {
-        document.getElementById('emailInput').style.borderColor = '#ff4444';
-        return;
-      }
-      document.getElementById('emailInput').style.borderColor = '#ddd';
-      document.querySelector('.signup').style.display = 'none';
-      document.querySelector('.signup-note').style.display = 'none';
-      document.getElementById('successMsg').style.display = 'block';
-    }
-  </script>
 
 </body>
 </html>
