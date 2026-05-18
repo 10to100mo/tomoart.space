@@ -414,11 +414,7 @@ function showSection(id) {
   document.querySelectorAll('.sidebar-nav a').forEach(a =>
     a.classList.toggle('active', a.dataset.section === id)
   );
-  if (window.innerWidth <= 768) {
-    document.querySelector('.content').scrollIntoView({ behavior: 'smooth' });
-  } else {
-    window.scrollTo(0, 0);
-  }
+  window.scrollTo(0, 0);
 }
 
 function showHome() {
