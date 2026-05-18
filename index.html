@@ -67,6 +67,16 @@
 
     .sidebar-nav a:hover { opacity: 0.35; }
     .sidebar-nav a.active { opacity: 1; }
+    .sidebar-nav a.active::before {
+      content: '';
+      display: inline-block;
+      width: 12px;
+      height: 1px;
+      background: #111;
+      margin-right: 8px;
+      vertical-align: middle;
+      margin-bottom: 2px;
+    }
 
 
     /* ── CONTENT ── */
@@ -267,7 +277,6 @@
         height: auto;
         padding: 36px 24px 28px;
         overflow-y: visible;
-        border-bottom: 1px solid #f0f0f0;
       }
       .content { margin-left: 0; }
       .site-title { font-size: 24px; margin-bottom: 28px; }
@@ -378,13 +387,14 @@
   WORKS — 新しい作品を配列の先頭に追加してください（上が新しい、下が古い）
   To add a new work, insert a new object at the TOP of this array.
 */
+/* 新しい作品は配列の先頭に追加 → 自動で番号が上から大きくなります */
 const WORKS = [
-  { src: 'painting_01.jpg', title: 'Untitled #1', meta: '2024  /  Oil on canvas  /  1620 × 1303 mm' },
-  { src: 'painting_02.jpg', title: 'Untitled #2', meta: '2024  /  Oil on canvas  /  1940 × 1120 mm' },
-  { src: 'painting_03.jpg', title: 'Untitled #3', meta: '2023  /  Oil on canvas  /  1300 × 970 mm' },
-  { src: 'panel%209.jpeg',  title: 'Panel 9',     meta: '2023  /  Oil on panel  /  910 × 4550 mm', horiz: true },
-  { src: 'painting_05.jpg', title: 'Untitled #5', meta: '2022  /  Oil on canvas  /  2000 × 1500 mm' },
-  { src: 'painting_06.jpg', title: 'Untitled #6', meta: '2022  /  Oil on linen   /  1620 × 1303 mm' },
+  { src: 'painting_01.jpg', title: 'Untitled', meta: '2024  /  Oil on canvas  /  1620 × 1303 mm' },
+  { src: 'painting_02.jpg', title: 'Untitled', meta: '2024  /  Oil on canvas  /  1940 × 1120 mm' },
+  { src: 'painting_03.jpg', title: 'Untitled', meta: '2023  /  Oil on canvas  /  1300 × 970 mm' },
+  { src: 'panel%209.jpeg',  title: 'Panel 9',  meta: '2023  /  Oil on panel  /  910 × 4550 mm', horiz: true },
+  { src: 'painting_05.jpg', title: 'Untitled', meta: '2022  /  Oil on canvas  /  2000 × 1500 mm' },
+  { src: 'painting_06.jpg', title: 'Untitled', meta: '2022  /  Oil on linen   /  1620 × 1303 mm' },
 ];
 
 /* ── NAVIGATION ── */
@@ -404,13 +414,15 @@ function showSection(id) {
 /* ── RENDER WORKS ── */
 function renderWorks() {
   const list = document.getElementById('works-list');
-  WORKS.forEach(w => {
+  WORKS.forEach((w, i) => {
+    const num = WORKS.length - i;
+    const displayTitle = w.title === 'Untitled' ? `Untitled #${num}` : w.title;
     const item = document.createElement('div');
 
     if (w.horiz) {
       const wrap = document.createElement('div');
       wrap.className = 'work-scroll-wrap';
-      wrap.appendChild(buildImg(w.src, w.title, 'work-img horiz',
+      wrap.appendChild(buildImg(w.src, displayTitle, 'work-img horiz',
         'background:#ebebeb;width:1400px;height:68vh;display:block;'));
       initDrag(wrap);
       item.appendChild(wrap);
@@ -419,14 +431,14 @@ function renderWorks() {
       hint.textContent = '← drag to explore →';
       item.appendChild(hint);
     } else {
-      item.appendChild(buildImg(w.src, w.title, 'work-img',
+      item.appendChild(buildImg(w.src, displayTitle, 'work-img',
         'background:#ebebeb;aspect-ratio:4/3;width:100%;max-width:900px;display:block;'));
     }
 
     const cap = document.createElement('div');
     cap.className = 'work-caption';
     cap.innerHTML =
-      `<p class="work-title-text">${w.title}</p>` +
+      `<p class="work-title-text">${displayTitle}</p>` +
       `<p class="work-meta-text">${w.meta}</p>`;
     item.appendChild(cap);
     list.appendChild(item);
