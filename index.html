@@ -66,18 +66,7 @@
     }
 
     .sidebar-nav a:hover { opacity: 0.35; }
-    .sidebar-nav a.active > span:first-child,
     .sidebar-nav a.active { opacity: 1; }
-    .sidebar-nav a.active::before {
-      content: '';
-      display: inline-block;
-      width: 12px;
-      height: 1px;
-      background: #111;
-      margin-right: 8px;
-      vertical-align: middle;
-      margin-bottom: 2px;
-    }
 
 
     /* ── CONTENT ── */
@@ -436,7 +425,9 @@ function renderWorks() {
 
     const cap = document.createElement('div');
     cap.className = 'work-caption';
-    cap.innerHTML = `<p class="work-meta-text">${w.meta}</p>`;
+    cap.innerHTML =
+      `<p class="work-title-text">${w.title}</p>` +
+      `<p class="work-meta-text">${w.meta}</p>`;
     item.appendChild(cap);
     list.appendChild(item);
   });
