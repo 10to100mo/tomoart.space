@@ -311,7 +311,7 @@
 
   <!-- PAINTING -->
   <!-- 新しい作品を上に、古い作品を下に追加してください -->
-  <section id="sec-painting" class="section active">
+  <section id="sec-painting" class="section">
     <div class="works-list" id="works-list"></div>
   </section>
 
@@ -390,12 +390,12 @@
   To add a new work, insert a new object at the TOP of this array.
 */
 const WORKS = [
-  { src: 'painting_01.jpg', title: 'Untitled #1 / 無題 #1', meta: '2024 / Oil on canvas / キャンバスに油彩 / 1620 × 1303 mm' },
-  { src: 'painting_02.jpg', title: 'Untitled #2 / 無題 #2', meta: '2024 / Oil on canvas / キャンバスに油彩 / 1940 × 1120 mm' },
-  { src: 'painting_03.jpg', title: 'Untitled #3 / 無題 #3', meta: '2023 / Oil on canvas / キャンバスに油彩 / 1300 × 970 mm' },
-  { src: 'panel%209.jpeg',  title: 'Panel 9 / パネル 9',    meta: '2023 / Oil on panel / パネルに油彩 / 910 × 4550 mm', horiz: true },
-  { src: 'painting_05.jpg', title: 'Untitled #5 / 無題 #5', meta: '2022 / Oil on canvas / キャンバスに油彩 / 2000 × 1500 mm' },
-  { src: 'painting_06.jpg', title: 'Untitled #6 / 無題 #6', meta: '2022 / Oil on linen / リネンに油彩 / 1620 × 1303 mm' },
+  { src: 'painting_01.jpg', title: 'Untitled #1', meta: '2024  /  Oil on canvas  /  1620 × 1303 mm' },
+  { src: 'painting_02.jpg', title: 'Untitled #2', meta: '2024  /  Oil on canvas  /  1940 × 1120 mm' },
+  { src: 'painting_03.jpg', title: 'Untitled #3', meta: '2023  /  Oil on canvas  /  1300 × 970 mm' },
+  { src: 'panel%209.jpeg',  title: 'Panel 9',     meta: '2023  /  Oil on panel  /  910 × 4550 mm', horiz: true },
+  { src: 'painting_05.jpg', title: 'Untitled #5', meta: '2022  /  Oil on canvas  /  2000 × 1500 mm' },
+  { src: 'painting_06.jpg', title: 'Untitled #6', meta: '2022  /  Oil on linen   /  1620 × 1303 mm' },
 ];
 
 /* ── NAVIGATION ── */
@@ -436,9 +436,7 @@ function renderWorks() {
 
     const cap = document.createElement('div');
     cap.className = 'work-caption';
-    cap.innerHTML =
-      `<p class="work-title-text">${w.title}</p>` +
-      `<p class="work-meta-text">${w.meta}</p>`;
+    cap.innerHTML = `<p class="work-meta-text">${w.meta}</p>`;
     item.appendChild(cap);
     list.appendChild(item);
   });
@@ -480,7 +478,6 @@ function submitNL(e) {
 
 /* ── INIT ── */
 renderWorks();
-document.querySelector('[data-section="painting"]').classList.add('active');
 </script>
 </body>
 </html>
