@@ -86,11 +86,11 @@
     .sidebar-social a {
       display: flex;
       align-items: center;
-      opacity: 0.6;
+      opacity: 1;
       transition: opacity 0.15s;
     }
-    .sidebar-social a:hover { opacity: 1; }
-    .sidebar-social svg { width: 18px; height: 18px; fill: #111; }
+    .sidebar-social a:hover { opacity: 0.4; }
+    .sidebar-social svg { width: 22px; height: 22px; fill: #111; }
     .sidebar-store {
       margin-top: 14px;
       font-size: 13px;
@@ -439,6 +439,9 @@
 */
 /* 新しい作品は配列の先頭に追加。ファイル名の番号がそのまま #番号になります */
 const WORKS = [
+  { src: 'painting_11.jpg', title: 'Untitled', meta: '2026  /  Acrylic on paper mounted on wood panel  /  364 × 515 mm' },
+  { src: 'painting_10.jpg', title: 'Untitled', meta: '2026  /  Acrylic on paper mounted on wood panel  /  364 × 515 mm' },
+  { src: 'painting_09.jpg', title: 'Untitled', meta: '2026  /  Acrylic on paper mounted on wood panel  /  364 × 515 mm' },
   { src: 'panel%209.jpeg',  title: 'Panel 9',  meta: '2023  /  Acrylic on paper mounted on wood panel  /  9 panels, 1030 × 728 mm each', horiz: true },
   { src: 'painting_08.jpg', title: 'Untitled', meta: '2025  /  Acrylic on paper mounted on wood panel  /  728 × 1030 mm' },
   { src: 'painting_07.jpg', title: 'Untitled', meta: '2024  /  Acrylic on paper mounted on wood panel  /  756 × 2060 mm' },
