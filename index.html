@@ -299,7 +299,7 @@
 
 <!-- ── SIDEBAR ── -->
 <aside class="sidebar">
-  <h1 class="site-title" onclick="showSection('painting')">TOMO</h1>
+  <h1 class="site-title" onclick="showHome()">TOMO</h1>
 
   <nav class="sidebar-nav">
     <a onclick="showSection('painting')" data-section="painting">PAINTING</a>
@@ -419,6 +419,12 @@ function showSection(id) {
   } else {
     window.scrollTo(0, 0);
   }
+}
+
+function showHome() {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+  window.scrollTo(0, 0);
 }
 
 /* ── RENDER WORKS ── */
