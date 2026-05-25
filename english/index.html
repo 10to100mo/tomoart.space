@@ -422,13 +422,13 @@
 
     <!-- Hint area -->
     <div class="hint-area" id="hint-area">
-      <div class="hint-label">HINT  /  ヒント</div>
+      <div class="hint-label">ANSWER  /  正解</div>
       <div class="hint-text" id="hint-text"></div>
     </div>
 
     <!-- Action buttons -->
     <div class="action-row" id="action-row">
-      <button class="btn" id="hint-btn" onclick="doHint()">HINT</button>
+      <button class="btn" id="hint-btn" onclick="doHint()">正解を見る</button>
       <button class="btn btn-primary" id="check-btn" onclick="doCheck()">CHECK ANSWER</button>
     </div>
 
@@ -687,30 +687,16 @@ function loadQ() {
   }
 }
 
-// ── HINT ─────────────────────────────────────────────────────────────────────
+// ── SHOW ANSWER ───────────────────────────────────────────────────────────────
 
 function doHint() {
-  S.hintStep++;
+  S.answerShown = true;
+  $("hint-btn").disabled = true;
+
   const primary = S.currentQ.en[0];
-  let html = "";
-
-  if (S.hintStep === 1) {
-    const first = primary.split(" ")[0];
-    html = `最初の単語: <strong>${first}</strong> ...`;
-  } else if (S.hintStep === 2) {
-    const half = primary.slice(0, Math.ceil(primary.length / 2));
-    html = `前半: <strong>${half}</strong> ...`;
-  } else {
-    S.hintStep    = 3;
-    S.answerShown = true;
-    html = `正解: <strong>${primary}</strong>`;
-    $("hint-btn").disabled = true;
-  }
-
-  $("hint-text").innerHTML = html;
+  $("hint-text").innerHTML = `正解: <strong>${primary}</strong>`;
   $("hint-area").style.display = "block";
 
-  // Focus input so user can re-enter after seeing hint
   $("answer-input").focus();
 }
 
