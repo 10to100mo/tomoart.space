@@ -174,53 +174,51 @@
     }
     .hint-text strong { color: #111; font-weight: 400; }
 
-    /* ── FEEDBACK ── */
-    .feedback {
+    /* ── RESULT WORD ── */
+    .result-word {
       display: none;
-      padding: 24px 28px;
+      font-size: 52px;
+      font-weight: 100;
+      letter-spacing: 0.18em;
+      line-height: 1;
+      margin-bottom: 14px;
+    }
+    .result-word.visible  { display: block; }
+    .result-word.correct  { color: #1a6b3a; }
+    .result-word.incorrect { color: #b52020; }
+
+    .result-note {
+      display: none;
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      color: #888;
       margin-bottom: 28px;
-      border: 1px solid;
+      line-height: 1.9;
     }
-    .feedback.visible { display: block; }
-    .feedback.correct { border-color: #b2d8be; background: #f5fbf7; }
-    .feedback.almost  { border-color: #f0d080; background: #fffdf0; }
-    .feedback.wrong   { border-color: #f0c0c0; background: #fff8f8; }
+    .result-note.visible { display: block; }
 
-    .feedback-status {
-      font-size: 10px;
-      letter-spacing: 0.35em;
-      margin-bottom: 10px;
-    }
-    .feedback.correct .feedback-status { color: #2d7a4f; }
-    .feedback.almost  .feedback-status { color: #8a6000; }
-    .feedback.wrong   .feedback-status { color: #9a1c1c; }
-
-    .feedback-body {
-      font-size: 14px;
-      letter-spacing: 0.05em;
-      line-height: 2;
-      color: #333;
-    }
-
+    /* ── ANSWER REVEAL ── */
     .answer-reveal {
-      margin-top: 16px;
-      padding-top: 16px;
+      display: none;
+      padding: 22px 0 28px;
       border-top: 1px solid #ebebeb;
+      margin-bottom: 4px;
     }
+    .answer-reveal.visible { display: block; }
 
     .answer-reveal-label {
       font-size: 10px;
       letter-spacing: 0.3em;
       color: #bbb;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     .answer-reveal-text {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 200;
       letter-spacing: 0.07em;
       line-height: 1.6;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
 
     .speak-answer-btn {
@@ -266,11 +264,7 @@
     }
     .btn-primary:hover:not(:disabled) { background: #333; border-color: #333; }
 
-    .retry-row {
-      display: none;
-      margin-bottom: 16px;
-    }
-    .retry-row.visible { display: flex; gap: 12px; }
+    .retry-row { display: none; }
 
     /* ── NEXT ── */
     .next-btn {
@@ -412,36 +406,30 @@
       </button>
     </div>
 
+    <!-- Result word: CORRECT / INCORRECT -->
+    <div class="result-word" id="result-word"></div>
+    <div class="result-note" id="result-note"></div>
+
+    <!-- Correct answer reveal (shown after correct) -->
+    <div class="answer-reveal" id="answer-reveal">
+      <div class="answer-reveal-label">CORRECT ANSWER  /  正解</div>
+      <div class="answer-reveal-text" id="answer-reveal-text"></div>
+      <button class="speak-answer-btn" onclick="speakCorrectAnswer()">
+        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+        LISTEN TO ANSWER
+      </button>
+    </div>
+
     <!-- Hint area -->
     <div class="hint-area" id="hint-area">
       <div class="hint-label">HINT  /  ヒント</div>
       <div class="hint-text" id="hint-text"></div>
     </div>
 
-    <!-- Feedback -->
-    <div class="feedback" id="feedback">
-      <div class="feedback-status" id="feedback-status"></div>
-      <div class="feedback-body" id="feedback-body"></div>
-      <div class="answer-reveal" id="answer-reveal" style="display:none">
-        <div class="answer-reveal-label">CORRECT ANSWER  /  正解</div>
-        <div class="answer-reveal-text" id="answer-reveal-text"></div>
-        <button class="speak-answer-btn" onclick="speakCorrectAnswer()">
-          <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-          LISTEN TO ANSWER
-        </button>
-      </div>
-    </div>
-
     <!-- Action buttons -->
     <div class="action-row" id="action-row">
       <button class="btn" id="hint-btn" onclick="doHint()">HINT</button>
       <button class="btn btn-primary" id="check-btn" onclick="doCheck()">CHECK ANSWER</button>
-    </div>
-
-    <!-- Retry row (visible after "almost") -->
-    <div class="retry-row" id="retry-row">
-      <button class="btn" onclick="doRetry()">TRY AGAIN  /  もう一度</button>
-      <button class="btn" id="skip-btn" onclick="doNext()">SKIP →</button>
     </div>
 
     <!-- Next button -->
@@ -672,25 +660,24 @@ function loadQ() {
     S.qIdx  = 0;
   }
 
-  S.currentQ   = S.queue[S.qIdx];
-  S.hintStep   = 0;
+  S.currentQ    = S.queue[S.qIdx];
+  S.hintStep    = 0;
   S.answerShown = false;
-  S.phase      = "input";
+  S.phase       = "input";
 
   $("question-text").textContent = S.currentQ.ja;
   $("answer-input").value = "";
   $("answer-input").disabled = false;
 
+  $("result-word").className = "result-word";
+  $("result-note").className = "result-note";
+  $("answer-reveal").className = "answer-reveal";
   hide("hint-area");
-  hide("feedback");
-  hide("retry-row");
   hide("next-btn");
   show("action-row");
 
   $("hint-btn").disabled  = false;
   $("check-btn").disabled = false;
-  $("feedback").className = "feedback";
-  $("answer-reveal").style.display = "none";
 
   updateProgressDots();
   updateStats();
@@ -709,19 +696,22 @@ function doHint() {
 
   if (S.hintStep === 1) {
     const first = primary.split(" ")[0];
-    html = `The answer starts with: <strong>${first}</strong>&nbsp;&nbsp;...`;
+    html = `最初の単語: <strong>${first}</strong> ...`;
   } else if (S.hintStep === 2) {
     const half = primary.slice(0, Math.ceil(primary.length / 2));
-    html = `First half: <strong>${half}</strong>&nbsp;&nbsp;...`;
+    html = `前半: <strong>${half}</strong> ...`;
   } else {
     S.hintStep    = 3;
     S.answerShown = true;
-    html = `Full answer: <strong>${primary}</strong>`;
+    html = `正解: <strong>${primary}</strong>`;
     $("hint-btn").disabled = true;
   }
 
   $("hint-text").innerHTML = html;
   show("hint-area");
+
+  // Focus input so user can re-enter after seeing hint
+  $("answer-input").focus();
 }
 
 // ── CHECK ANSWER ─────────────────────────────────────────────────────────────
@@ -738,7 +728,7 @@ function doCheck() {
   } else if (dist <= threshold) {
     onAlmost(input, ans);
   } else {
-    onWrong(input);
+    onWrong();
   }
 }
 
@@ -752,17 +742,25 @@ function onCorrect(input, ans) {
     localStorage.setItem("ep_ok", S.totalCorrect);
   }
 
-  setFeedback("correct",
-    S.answerShown ? "CORRECT  /  正解（ヒント使用）" : "CORRECT  /  正解！",
-    S.answerShown ? "Great — you got it with the hint." : "Perfect! Well done."
-  );
-  showAnswerReveal(ans);
+  // Show big CORRECT
+  const rw = $("result-word");
+  rw.textContent = "CORRECT";
+  rw.className = "result-word visible correct";
 
+  const rn = $("result-note");
+  rn.textContent = S.answerShown ? "ヒントを使って正解！" : "正解！よくできました。";
+  rn.className = "result-note visible";
+
+  // Show correct answer + TTS
+  $("answer-reveal-text").textContent = ans;
+  $("answer-reveal").className = "answer-reveal visible";
+
+  hide("hint-area");
   hide("action-row");
-  hide("retry-row");
+  $("answer-input").disabled = true;
+
   const btn = $("next-btn");
   btn.style.display = "block";
-
   if (S.lvProgress >= NEED_CORRECT) {
     btn.textContent = "LEVEL COMPLETE →";
     btn.onclick = doLevelComplete;
@@ -779,40 +777,36 @@ function onAlmost(input, ans) {
   S.phase = "almost";
   S.streak = 0;
 
-  setFeedback("almost",
-    "ALMOST  /  惜しい！",
-    `Your answer: <em>${input}</em><br>There's a small mistake. Check the answer and try again.`
-  );
-  showAnswerReveal(ans);
+  const rw = $("result-word");
+  rw.textContent = "INCORRECT";
+  rw.className = "result-word visible incorrect";
 
-  hide("action-row");
-  show("retry-row");
+  const rn = $("result-note");
+  rn.textContent = "惜しい！小さなミスがあります。ヒントを使って入力し直してみてください。";
+  rn.className = "result-note visible";
+
+  // Keep action row and input active for retry
   $("answer-input").disabled = false;
+  $("check-btn").disabled = false;
+  $("hint-btn").disabled = S.hintStep >= 3;
 }
 
-function onWrong(input) {
+function onWrong() {
   S.phase  = "wrong_retry";
   S.streak = 0;
 
-  setFeedback("wrong",
-    "NOT QUITE  /  もう一度！",
-    "Try again. Use the hint button if you need help."
-  );
-  hide("answer-reveal");
+  const rw = $("result-word");
+  rw.textContent = "INCORRECT";
+  rw.className = "result-word visible incorrect";
 
-  $("check-btn").disabled = false;
-  $("answer-input").disabled = false;
-}
+  const rn = $("result-note");
+  rn.textContent = "もう一度！ヒントを使ってみてください。";
+  rn.className = "result-note visible";
 
-// ── RETRY / NEXT ─────────────────────────────────────────────────────────────
-
-function doRetry() {
-  hide("feedback");
-  hide("retry-row");
-  show("action-row");
+  // Keep action row and input active
   $("answer-input").disabled = false;
   $("check-btn").disabled = false;
-  $("answer-input").focus();
+  $("hint-btn").disabled = S.hintStep >= 3;
 }
 
 function doNext() {
@@ -877,18 +871,6 @@ function speakCorrectAnswer() {
 function $(id) { return document.getElementById(id); }
 function show(id) { const el = $(id); if (el) el.style.display = ""; }
 function hide(id) { const el = $(id); if (el) el.style.display = "none"; }
-
-function setFeedback(type, label, body) {
-  const fb = $("feedback");
-  fb.className = "feedback visible " + type;
-  $("feedback-status").textContent = label;
-  $("feedback-body").innerHTML     = body;
-}
-
-function showAnswerReveal(ans) {
-  $("answer-reveal-text").textContent = ans;
-  $("answer-reveal").style.display    = "block";
-}
 
 function updateHeader() {
   $("level-badge").textContent     = "LV " + S.level;
