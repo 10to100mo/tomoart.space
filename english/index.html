@@ -734,7 +734,7 @@ function onCorrect(input, ans) {
   rw.className = "result-word visible correct";
 
   const rn = $("result-note");
-  rn.textContent = S.answerShown ? "ヒントを使って正解！" : "正解！よくできました。";
+  rn.textContent = "正解！よくできました。";
   rn.className = "result-note visible";
 
   // Show correct answer + TTS
@@ -768,7 +768,7 @@ function onAlmost(input, ans) {
   rw.className = "result-word visible incorrect";
 
   const rn = $("result-note");
-  rn.textContent = "惜しい！小さなミスがあります。ヒントを使って入力し直してみてください。";
+  rn.textContent = "惜しい！小さなミスがあります。";
   rn.className = "result-note visible";
 
   // Keep action row and input active for retry
@@ -786,8 +786,8 @@ function onWrong() {
   rw.className = "result-word visible incorrect";
 
   const rn = $("result-note");
-  rn.textContent = "もう一度！ヒントを使ってみてください。";
-  rn.className = "result-note visible";
+  rn.textContent = "";
+  rn.className = "result-note";
 
   // Keep action row and input active
   $("answer-input").disabled = false;
