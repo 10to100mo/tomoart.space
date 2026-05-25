@@ -708,7 +708,7 @@ function doHint() {
   }
 
   $("hint-text").innerHTML = html;
-  show("hint-area");
+  $("hint-area").style.display = "block";
 
   // Focus input so user can re-enter after seeing hint
   $("answer-input").focus();
