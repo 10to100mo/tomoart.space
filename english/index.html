@@ -150,29 +150,6 @@
     .speak-my-btn svg { width: 15px; height: 15px; fill: currentColor; }
     .speak-my-btn.speaking { color: #111; }
 
-    /* ── HINT ── */
-    .hint-area {
-      display: none;
-      border-left: 2px solid #e0e0e0;
-      padding: 16px 20px;
-      margin-bottom: 28px;
-      line-height: 1.9;
-    }
-    .hint-area.visible { display: block; }
-
-    .hint-label {
-      font-size: 10px;
-      letter-spacing: 0.3em;
-      color: #bbb;
-      margin-bottom: 8px;
-    }
-
-    .hint-text {
-      font-size: 14px;
-      color: #555;
-      letter-spacing: 0.05em;
-    }
-    .hint-text strong { color: #111; font-weight: 400; }
 
     /* ── RESULT WORD ── */
     .result-word {
@@ -265,6 +242,113 @@
     .btn-primary:hover:not(:disabled) { background: #333; border-color: #333; }
 
     .retry-row { display: none; }
+
+    /* ── TABS ── */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      margin-bottom: 44px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    .tab {
+      background: none;
+      border: none;
+      padding: 12px 0;
+      margin-right: 32px;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.28em;
+      color: #aaa;
+      cursor: pointer;
+      border-bottom: 1px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.15s;
+    }
+    .tab.active { color: #111; border-bottom-color: #111; }
+    .tab:hover:not(.active) { color: #555; }
+
+    /* ── MY CARDS ── */
+    .mc-section { display: none; }
+    .mc-section.active { display: block; }
+
+    .mc-card-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 20px 0;
+      border-bottom: 1px solid #f0f0f0;
+      gap: 16px;
+    }
+
+    .mc-card-texts { flex: 1; }
+
+    .mc-card-ja {
+      font-size: 17px;
+      font-weight: 200;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+
+    .mc-card-en {
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      color: #888;
+    }
+
+    .mc-delete-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: #ccc;
+      padding: 0 4px;
+      line-height: 1;
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+    .mc-delete-btn:hover { color: #999; }
+
+    .mc-empty {
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      color: #ccc;
+      padding: 40px 0;
+      text-align: center;
+      line-height: 2.2;
+    }
+
+    .mc-form-label {
+      font-size: 10px;
+      letter-spacing: 0.35em;
+      color: #bbb;
+      margin-bottom: 10px;
+    }
+
+    .mc-textarea {
+      width: 100%;
+      font-family: 'Josefin Sans', sans-serif;
+      font-weight: 300;
+      font-size: 16px;
+      letter-spacing: 0.06em;
+      border: none;
+      border-bottom: 1px solid #111;
+      padding: 10px 0;
+      background: transparent;
+      color: #111;
+      outline: none;
+      resize: none;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .mc-textarea::placeholder { color: #ccc; }
+
+    .mc-btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    /* quiz in mycards uses same styles as practice */
 
     /* ── NEXT ── */
     .next-btn {
@@ -374,7 +458,13 @@
     <span class="level-badge" id="level-badge">LV 1</span>
   </div>
 
-  <!-- PRACTICE AREA -->
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab active" id="tab-practice" onclick="switchTab('practice')">練習問題</button>
+    <button class="tab" id="tab-mycards" onclick="switchTab('mycards')">マイカード</button>
+  </div>
+
+  <!-- ══ PRACTICE TAB ══ -->
   <div id="practice-area">
 
     <!-- Progress -->
@@ -392,27 +482,19 @@
     <!-- Input -->
     <div class="input-section">
       <div class="input-label">YOUR ANSWER  /  あなたの答え</div>
-      <textarea
-        class="answer-input"
-        id="answer-input"
-        placeholder="Type your English answer..."
-        rows="2"
-        autocomplete="off"
-        spellcheck="false"
-      ></textarea>
-      <button class="speak-my-btn" id="speak-my-btn" onclick="speakMyAnswer()">
+      <textarea class="answer-input" id="answer-input" placeholder="Type your English answer..."
+        rows="2" autocomplete="off" spellcheck="false"></textarea>
+      <button class="speak-my-btn" onclick="speakMyAnswer()">
         <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
         READ MY ANSWER
       </button>
     </div>
 
-    <!-- Result word: CORRECT / INCORRECT -->
     <div class="result-word" id="result-word"></div>
     <div class="result-note" id="result-note"></div>
 
-    <!-- Correct answer reveal (shown after correct) -->
     <div class="answer-reveal" id="answer-reveal">
-      <div class="answer-reveal-label">CORRECT ANSWER  /  正解</div>
+      <div class="answer-reveal-label">正解</div>
       <div class="answer-reveal-text" id="answer-reveal-text"></div>
       <button class="speak-answer-btn" onclick="speakCorrectAnswer()">
         <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
@@ -420,22 +502,18 @@
       </button>
     </div>
 
-    <!-- Hint area -->
-    <div class="hint-area" id="hint-area">
-      <div class="hint-label">ANSWER  /  正解</div>
-      <div class="hint-text" id="hint-text"></div>
+    <div class="answer-reveal" id="show-answer-area" style="display:none">
+      <div class="answer-reveal-label">正解</div>
+      <div class="answer-reveal-text" id="show-answer-text"></div>
     </div>
 
-    <!-- Action buttons -->
     <div class="action-row" id="action-row">
-      <button class="btn" id="hint-btn" onclick="doHint()">正解を見る</button>
+      <button class="btn" id="show-answer-btn" onclick="doShowAnswer()">正解を見る</button>
       <button class="btn btn-primary" id="check-btn" onclick="doCheck()">CHECK ANSWER</button>
     </div>
 
-    <!-- Next button -->
     <button class="next-btn" id="next-btn" onclick="doNext()">NEXT QUESTION →</button>
 
-    <!-- Stats -->
     <div class="stats-bar">
       <div class="stat">
         <span class="stat-value" id="stat-level">1</span>
@@ -453,23 +531,96 @@
 
   </div><!-- /practice-area -->
 
-  <!-- LEVEL UP SCREEN -->
+  <!-- LEVEL UP / COMPLETE overlays -->
   <div class="overlay" id="levelup-screen">
     <div class="overlay-title">LEVEL UP!</div>
     <div class="overlay-sub" id="levelup-sub"></div>
     <button class="overlay-btn" onclick="beginLevel()">CONTINUE →</button>
   </div>
-
-  <!-- COMPLETE SCREEN -->
   <div class="overlay" id="complete-screen">
     <div class="overlay-title">COMPLETE!</div>
-    <div class="overlay-sub">
-      All 5 levels cleared!<br>
-      Excellent work.<br><br>
-      おめでとうございます！
-    </div>
+    <div class="overlay-sub">All 5 levels cleared!<br>Excellent work.<br><br>おめでとうございます！</div>
     <button class="overlay-btn" onclick="doRestart()">RESTART →</button>
   </div>
+
+  <!-- ══ MY CARDS TAB ══ -->
+  <div id="mycards-area" style="display:none">
+
+    <!-- LIST VIEW -->
+    <div id="mc-list-view">
+      <div id="mc-empty" class="mc-empty" style="display:none">
+        カードがまだありません。<br>
+        下のボタンから追加してください。
+      </div>
+      <div id="mc-card-list"></div>
+
+      <div class="mc-btn-row" style="margin-top:32px">
+        <button class="btn" onclick="mcShowAdd()">+ カードを追加</button>
+        <button class="btn btn-primary" id="mc-quiz-start-btn" onclick="mcStartQuiz()">練習する →</button>
+      </div>
+    </div>
+
+    <!-- ADD FORM VIEW -->
+    <div id="mc-add-view" style="display:none">
+      <div style="margin-bottom:32px">
+        <div class="mc-form-label">日本語の文章</div>
+        <textarea class="mc-textarea" id="mc-ja-input" placeholder="例：今日はいい天気ですね。" rows="2"></textarea>
+        <div class="mc-form-label">英語の正解</div>
+        <textarea class="mc-textarea" id="mc-en-input" placeholder="例：It's a nice day today." rows="2"></textarea>
+      </div>
+      <div class="mc-btn-row">
+        <button class="btn" onclick="mcCancelAdd()">キャンセル</button>
+        <button class="btn btn-primary" onclick="mcSaveCard()">保存する</button>
+      </div>
+    </div>
+
+    <!-- QUIZ VIEW -->
+    <div id="mc-quiz-view" style="display:none">
+      <div class="question-card">
+        <div class="question-label">日本語 → 英語に訳してください</div>
+        <div class="question-text" id="mc-question-text">—</div>
+      </div>
+
+      <div class="input-section">
+        <div class="input-label">YOUR ANSWER  /  あなたの答え</div>
+        <textarea class="answer-input" id="mc-answer-input" placeholder="Type your English answer..."
+          rows="2" autocomplete="off" spellcheck="false"></textarea>
+        <button class="speak-my-btn" onclick="mcSpeakMyAnswer()">
+          <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          READ MY ANSWER
+        </button>
+      </div>
+
+      <div class="result-word" id="mc-result-word"></div>
+      <div class="result-note" id="mc-result-note"></div>
+
+      <div class="answer-reveal" id="mc-answer-reveal">
+        <div class="answer-reveal-label">正解</div>
+        <div class="answer-reveal-text" id="mc-answer-reveal-text"></div>
+        <button class="speak-answer-btn" onclick="mcSpeakCorrect()">
+          <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          LISTEN TO ANSWER
+        </button>
+      </div>
+
+      <div class="answer-reveal" id="mc-show-answer-area" style="display:none">
+        <div class="answer-reveal-label">正解</div>
+        <div class="answer-reveal-text" id="mc-show-answer-text"></div>
+      </div>
+
+      <div class="action-row" id="mc-action-row">
+        <button class="btn" id="mc-show-answer-btn" onclick="mcDoShowAnswer()">正解を見る</button>
+        <button class="btn btn-primary" id="mc-check-btn" onclick="mcDoCheck()">CHECK ANSWER</button>
+      </div>
+
+      <button class="next-btn" id="mc-next-btn" onclick="mcDoNext()">NEXT →</button>
+
+      <div style="margin-top:32px; padding-top:24px; border-top:1px solid #f0f0f0;">
+        <button class="btn" onclick="mcBackToList()">← カード一覧に戻る</button>
+      </div>
+    </div>
+
+  </div><!-- /mycards-area -->
 
 </div><!-- /container -->
 
@@ -574,24 +725,11 @@ const LEVEL_NAMES = {
 const NEED_CORRECT = 5;
 const MAX_LEVEL = 5;
 
-// ── STATE ────────────────────────────────────────────────────────────────────
-
-const S = {
-  level:        parseInt(localStorage.getItem("ep_lv")  || "1"),
-  totalCorrect: parseInt(localStorage.getItem("ep_ok")  || "0"),
-  streak:       0,
-  lvProgress:   0,
-  hintStep:     0,
-  answerShown:  false,
-  phase:        "input",  // input | almost | correct | wrong_retry
-  queue:        [],
-  qIdx:         0,
-  currentQ:     null,
-};
-
-if (S.level > MAX_LEVEL) { S.level = 1; localStorage.setItem("ep_lv", "1"); }
-
 // ── HELPERS ──────────────────────────────────────────────────────────────────
+
+function $(id) { return document.getElementById(id); }
+function showEl(id) { const el = $(id); if (el) el.style.display = ""; }
+function hideEl(id) { const el = $(id); if (el) el.style.display = "none"; }
 
 function levenshtein(a, b) {
   const m = a.length, n = b.length;
@@ -610,7 +748,7 @@ function levenshtein(a, b) {
 
 function norm(s) {
   return s.toLowerCase().trim().replace(/[.!?,]+$/, "").replace(/\s+/g, " ")
-          .replace(/'/g, "'").replace(/'/g, "'");
+          .replace(/’/g, "'").replace(/‘/g, "'");
 }
 
 function shuffle(arr) {
@@ -622,212 +760,16 @@ function shuffle(arr) {
   return a;
 }
 
-function bestMatch(input, question) {
+function bestMatchFromList(input, answers) {
   const normInput = norm(input);
-  let minDist = Infinity, best = question.en[0], exact = false;
-  for (const ans of question.en) {
+  let minDist = Infinity, best = answers[0], exact = false;
+  for (const ans of answers) {
     const normAns = norm(ans);
     if (normInput === normAns) { exact = true; best = ans; break; }
     const d = levenshtein(normInput, normAns);
     if (d < minDist) { minDist = d; best = ans; }
   }
   return { exact, dist: minDist, ans: best };
-}
-
-// ── INIT & LEVEL START ────────────────────────────────────────────────────────
-
-function init() {
-  beginLevel();
-}
-
-function beginLevel() {
-  hide("levelup-screen");
-  hide("complete-screen");
-  show("practice-area");
-
-  S.lvProgress = 0;
-  S.streak = 0;
-  S.queue  = shuffle(QUESTIONS.filter(q => q.level === S.level));
-  S.qIdx   = 0;
-
-  updateHeader();
-  loadQ();
-}
-
-function loadQ() {
-  if (S.qIdx >= S.queue.length) {
-    S.queue = shuffle(QUESTIONS.filter(q => q.level === S.level));
-    S.qIdx  = 0;
-  }
-
-  S.currentQ    = S.queue[S.qIdx];
-  S.hintStep    = 0;
-  S.answerShown = false;
-  S.phase       = "input";
-
-  $("question-text").textContent = S.currentQ.ja;
-  $("answer-input").value = "";
-  $("answer-input").disabled = false;
-
-  $("result-word").className = "result-word";
-  $("result-note").className = "result-note";
-  $("answer-reveal").className = "answer-reveal";
-  hide("hint-area");
-  hide("next-btn");
-  show("action-row");
-
-  $("hint-btn").disabled  = false;
-  $("check-btn").disabled = false;
-
-  updateProgressDots();
-  updateStats();
-
-  if (window.matchMedia("(pointer:fine)").matches) {
-    $("answer-input").focus();
-  }
-}
-
-// ── SHOW ANSWER ───────────────────────────────────────────────────────────────
-
-function doHint() {
-  S.answerShown = true;
-  $("hint-btn").disabled = true;
-
-  const primary = S.currentQ.en[0];
-  $("hint-text").innerHTML = `正解: <strong>${primary}</strong>`;
-  $("hint-area").style.display = "block";
-
-  $("answer-input").focus();
-}
-
-// ── CHECK ANSWER ─────────────────────────────────────────────────────────────
-
-function doCheck() {
-  const input = $("answer-input").value.trim();
-  if (!input) return;
-
-  const { exact, dist, ans } = bestMatch(input, S.currentQ);
-  const threshold = Math.max(2, Math.floor(norm(ans).length * 0.18));
-
-  if (exact) {
-    onCorrect(input, ans);
-  } else if (dist <= threshold) {
-    onAlmost(input, ans);
-  } else {
-    onWrong();
-  }
-}
-
-function onCorrect(input, ans) {
-  S.phase = "correct";
-
-  if (!S.answerShown) {
-    S.lvProgress++;
-    S.totalCorrect++;
-    S.streak++;
-    localStorage.setItem("ep_ok", S.totalCorrect);
-  }
-
-  // Show big CORRECT
-  const rw = $("result-word");
-  rw.textContent = "CORRECT";
-  rw.className = "result-word visible correct";
-
-  const rn = $("result-note");
-  rn.textContent = "正解！よくできました。";
-  rn.className = "result-note visible";
-
-  // Show correct answer + TTS
-  $("answer-reveal-text").textContent = ans;
-  $("answer-reveal").className = "answer-reveal visible";
-
-  hide("hint-area");
-  hide("action-row");
-  $("answer-input").disabled = true;
-
-  const btn = $("next-btn");
-  btn.style.display = "block";
-  if (S.lvProgress >= NEED_CORRECT) {
-    btn.textContent = "LEVEL COMPLETE →";
-    btn.onclick = doLevelComplete;
-  } else {
-    btn.textContent = "NEXT QUESTION →";
-    btn.onclick = doNext;
-  }
-
-  updateStats();
-  updateProgressDots();
-}
-
-function onAlmost(input, ans) {
-  S.phase = "almost";
-  S.streak = 0;
-
-  const rw = $("result-word");
-  rw.textContent = "INCORRECT";
-  rw.className = "result-word visible incorrect";
-
-  const rn = $("result-note");
-  rn.textContent = "惜しい！小さなミスがあります。";
-  rn.className = "result-note visible";
-
-  // Keep action row and input active for retry
-  $("answer-input").disabled = false;
-  $("check-btn").disabled = false;
-  $("hint-btn").disabled = S.hintStep >= 3;
-}
-
-function onWrong() {
-  S.phase  = "wrong_retry";
-  S.streak = 0;
-
-  const rw = $("result-word");
-  rw.textContent = "INCORRECT";
-  rw.className = "result-word visible incorrect";
-
-  const rn = $("result-note");
-  rn.textContent = "";
-  rn.className = "result-note";
-
-  // Keep action row and input active
-  $("answer-input").disabled = false;
-  $("check-btn").disabled = false;
-  $("hint-btn").disabled = S.hintStep >= 3;
-}
-
-function doNext() {
-  S.qIdx++;
-  loadQ();
-}
-
-// ── LEVEL COMPLETE ────────────────────────────────────────────────────────────
-
-function doLevelComplete() {
-  if (S.level >= MAX_LEVEL) {
-    hide("practice-area");
-    show("complete-screen");
-    return;
-  }
-
-  S.level++;
-  localStorage.setItem("ep_lv", S.level);
-
-  hide("practice-area");
-  $("levelup-sub").innerHTML =
-    `Level ${S.level - 1} complete!<br>` +
-    `Advancing to Level ${S.level}:<br><br>` +
-    `<span style="font-size:12px;letter-spacing:0.3em">${LEVEL_NAMES[S.level]}</span>`;
-  show("levelup-screen");
-
-  updateHeader();
-}
-
-function doRestart() {
-  S.level = 1; S.totalCorrect = 0; S.streak = 0; S.lvProgress = 0;
-  localStorage.setItem("ep_lv", "1");
-  localStorage.setItem("ep_ok", "0");
-  hide("complete-screen");
-  beginLevel();
 }
 
 // ── TTS ───────────────────────────────────────────────────────────────────────
@@ -843,24 +785,172 @@ function speak(text) {
   speechSynthesis.speak(u);
 }
 
-function speakMyAnswer() {
-  const v = $("answer-input").value.trim();
-  if (v) speak(v);
+function speakMyAnswer()    { const v = $("answer-input").value.trim(); if (v) speak(v); }
+function speakCorrectAnswer() { if (S.currentQ) speak(S.currentQ.en[0]); }
+
+if (!hasTTS) {
+  document.querySelectorAll(".speak-my-btn, .speak-answer-btn").forEach(b => b.style.display = "none");
 }
 
-function speakCorrectAnswer() {
-  if (S.currentQ) speak(S.currentQ.en[0]);
+// ── TAB SWITCHING ─────────────────────────────────────────────────────────────
+
+function switchTab(tab) {
+  if (tab === "practice") {
+    $("tab-practice").classList.add("active");
+    $("tab-mycards").classList.remove("active");
+    $("practice-area").style.display = "";
+    $("levelup-screen").style.display = "none";
+    $("complete-screen").style.display = "none";
+    $("mycards-area").style.display = "none";
+  } else {
+    $("tab-mycards").classList.add("active");
+    $("tab-practice").classList.remove("active");
+    $("practice-area").style.display = "none";
+    $("levelup-screen").style.display = "none";
+    $("complete-screen").style.display = "none";
+    $("mycards-area").style.display = "";
+    mcShowList();
+  }
 }
 
-// ── UI HELPERS ────────────────────────────────────────────────────────────────
+// ══ PRACTICE ══════════════════════════════════════════════════════════════════
 
-function $(id) { return document.getElementById(id); }
-function show(id) { const el = $(id); if (el) el.style.display = ""; }
-function hide(id) { const el = $(id); if (el) el.style.display = "none"; }
+const S = {
+  level:        parseInt(localStorage.getItem("ep_lv") || "1"),
+  totalCorrect: parseInt(localStorage.getItem("ep_ok") || "0"),
+  streak:       0,
+  lvProgress:   0,
+  answerShown:  false,
+  phase:        "input",
+  queue:        [],
+  qIdx:         0,
+  currentQ:     null,
+};
+
+if (S.level > MAX_LEVEL) { S.level = 1; localStorage.setItem("ep_lv", "1"); }
+
+function init() { beginLevel(); }
+
+function beginLevel() {
+  hideEl("levelup-screen");
+  hideEl("complete-screen");
+  $("practice-area").style.display = "";
+
+  S.lvProgress = 0;
+  S.streak = 0;
+  S.queue  = shuffle(QUESTIONS.filter(q => q.level === S.level));
+  S.qIdx   = 0;
+
+  updateHeader();
+  loadQ();
+}
+
+function loadQ() {
+  if (S.qIdx >= S.queue.length) {
+    S.queue = shuffle(QUESTIONS.filter(q => q.level === S.level));
+    S.qIdx  = 0;
+  }
+  S.currentQ    = S.queue[S.qIdx];
+  S.answerShown = false;
+  S.phase       = "input";
+
+  $("question-text").textContent = S.currentQ.ja;
+  $("answer-input").value = "";
+  $("answer-input").disabled = false;
+
+  $("result-word").className = "result-word";
+  $("result-note").className = "result-note";
+  $("answer-reveal").className = "answer-reveal";
+  $("show-answer-area").style.display = "none";
+  $("next-btn").style.display = "none";
+  $("action-row").style.display = "";
+  $("show-answer-btn").disabled = false;
+  $("check-btn").disabled = false;
+
+  updateProgressDots();
+  updateStats();
+  if (window.matchMedia("(pointer:fine)").matches) $("answer-input").focus();
+}
+
+function doShowAnswer() {
+  S.answerShown = true;
+  $("show-answer-btn").disabled = true;
+  $("show-answer-text").textContent = S.currentQ.en[0];
+  $("show-answer-area").style.display = "block";
+  $("answer-input").focus();
+}
+
+function doCheck() {
+  const input = $("answer-input").value.trim();
+  if (!input) return;
+
+  const { exact, dist, ans } = bestMatchFromList(input, S.currentQ.en);
+  const threshold = Math.max(2, Math.floor(norm(ans).length * 0.18));
+
+  if (exact) {
+    if (!S.answerShown) { S.lvProgress++; S.totalCorrect++; S.streak++; localStorage.setItem("ep_ok", S.totalCorrect); }
+    $("result-word").textContent = "CORRECT";
+    $("result-word").className = "result-word visible correct";
+    $("result-note").textContent = "正解！よくできました。";
+    $("result-note").className = "result-note visible";
+    $("answer-reveal-text").textContent = ans;
+    $("answer-reveal").className = "answer-reveal visible";
+    $("show-answer-area").style.display = "none";
+    $("action-row").style.display = "none";
+    $("answer-input").disabled = true;
+    const btn = $("next-btn");
+    btn.style.display = "block";
+    btn.textContent = S.lvProgress >= NEED_CORRECT ? "LEVEL COMPLETE →" : "NEXT QUESTION →";
+    btn.onclick     = S.lvProgress >= NEED_CORRECT ? doLevelComplete : doNext;
+    updateStats(); updateProgressDots();
+  } else if (dist <= threshold) {
+    S.streak = 0;
+    $("result-word").textContent = "INCORRECT";
+    $("result-word").className = "result-word visible incorrect";
+    $("result-note").textContent = "惜しい！小さなミスがあります。";
+    $("result-note").className = "result-note visible";
+    $("answer-input").disabled = false;
+    $("check-btn").disabled = false;
+    $("show-answer-btn").disabled = S.answerShown;
+  } else {
+    S.streak = 0;
+    $("result-word").textContent = "INCORRECT";
+    $("result-word").className = "result-word visible incorrect";
+    $("result-note").className = "result-note";
+    $("answer-input").disabled = false;
+    $("check-btn").disabled = false;
+    $("show-answer-btn").disabled = S.answerShown;
+  }
+}
+
+function doNext() { S.qIdx++; loadQ(); }
+
+function doLevelComplete() {
+  if (S.level >= MAX_LEVEL) {
+    $("practice-area").style.display = "none";
+    $("complete-screen").style.display = "block";
+    return;
+  }
+  S.level++;
+  localStorage.setItem("ep_lv", S.level);
+  $("practice-area").style.display = "none";
+  $("levelup-sub").innerHTML =
+    `Level ${S.level - 1} complete!<br>Advancing to Level ${S.level}:<br><br>` +
+    `<span style="font-size:12px;letter-spacing:0.3em">${LEVEL_NAMES[S.level]}</span>`;
+  $("levelup-screen").style.display = "block";
+  updateHeader();
+}
+
+function doRestart() {
+  S.level = 1; S.totalCorrect = 0; S.streak = 0; S.lvProgress = 0;
+  localStorage.setItem("ep_lv", "1"); localStorage.setItem("ep_ok", "0");
+  $("complete-screen").style.display = "none";
+  beginLevel();
+}
 
 function updateHeader() {
-  $("level-badge").textContent     = "LV " + S.level;
-  $("stat-level").textContent      = S.level;
+  $("level-badge").textContent = "LV " + S.level;
+  $("stat-level").textContent  = S.level;
   $("progress-level-num").textContent  = S.level;
   $("progress-level-name").textContent = LEVEL_NAMES[S.level] || "";
 }
@@ -880,19 +970,170 @@ function updateStats() {
   $("stat-streak").textContent  = S.streak;
 }
 
-// Hide TTS buttons if not supported
-if (!hasTTS) {
-  document.querySelectorAll(".speak-my-btn, .speak-answer-btn").forEach(b => {
-    b.style.display = "none";
+$("answer-input").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); doCheck(); }
+});
+
+// ══ MY CARDS ══════════════════════════════════════════════════════════════════
+
+let myCards = JSON.parse(localStorage.getItem("ep_mycards") || "[]");
+
+function saveMyCards() {
+  localStorage.setItem("ep_mycards", JSON.stringify(myCards));
+}
+
+// ── List view ─────────────────────────────────────────────────────────────────
+
+function mcShowList() {
+  $("mc-list-view").style.display = "";
+  $("mc-add-view").style.display  = "none";
+  $("mc-quiz-view").style.display = "none";
+  renderCardList();
+}
+
+function renderCardList() {
+  const list = $("mc-card-list");
+  list.innerHTML = "";
+
+  if (myCards.length === 0) {
+    $("mc-empty").style.display = "block";
+    $("mc-quiz-start-btn").disabled = true;
+    return;
+  }
+  $("mc-empty").style.display = "none";
+  $("mc-quiz-start-btn").disabled = false;
+
+  myCards.forEach((card, i) => {
+    const item = document.createElement("div");
+    item.className = "mc-card-item";
+    item.innerHTML =
+      `<div class="mc-card-texts">
+        <div class="mc-card-ja">${card.ja}</div>
+        <div class="mc-card-en">${card.en}</div>
+      </div>
+      <button class="mc-delete-btn" onclick="mcDeleteCard(${i})" title="削除">×</button>`;
+    list.appendChild(item);
   });
 }
 
-// Enter key to check
-$("answer-input").addEventListener("keydown", e => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    if (S.phase === "input" || S.phase === "wrong_retry") doCheck();
+function mcDeleteCard(i) {
+  myCards.splice(i, 1);
+  saveMyCards();
+  renderCardList();
+}
+
+// ── Add card view ─────────────────────────────────────────────────────────────
+
+function mcShowAdd() {
+  $("mc-list-view").style.display = "none";
+  $("mc-add-view").style.display  = "";
+  $("mc-ja-input").value = "";
+  $("mc-en-input").value = "";
+  $("mc-ja-input").focus();
+}
+
+function mcCancelAdd() { mcShowList(); }
+
+function mcSaveCard() {
+  const ja = $("mc-ja-input").value.trim();
+  const en = $("mc-en-input").value.trim();
+  if (!ja || !en) return;
+  myCards.push({ ja, en });
+  saveMyCards();
+  mcShowList();
+}
+
+// ── Quiz view ─────────────────────────────────────────────────────────────────
+
+const MC = { queue: [], qIdx: 0, currentCard: null, answerShown: false };
+
+function mcStartQuiz() {
+  if (myCards.length === 0) return;
+  MC.queue = shuffle([...myCards]);
+  MC.qIdx  = 0;
+  $("mc-list-view").style.display = "none";
+  $("mc-add-view").style.display  = "none";
+  $("mc-quiz-view").style.display = "";
+  mcLoadQ();
+}
+
+function mcLoadQ() {
+  if (MC.qIdx >= MC.queue.length) {
+    MC.queue = shuffle([...myCards]);
+    MC.qIdx  = 0;
   }
+  MC.currentCard  = MC.queue[MC.qIdx];
+  MC.answerShown  = false;
+
+  $("mc-question-text").textContent = MC.currentCard.ja;
+  $("mc-answer-input").value = "";
+  $("mc-answer-input").disabled = false;
+
+  $("mc-result-word").className = "result-word";
+  $("mc-result-note").className = "result-note";
+  $("mc-answer-reveal").className = "answer-reveal";
+  $("mc-show-answer-area").style.display = "none";
+  $("mc-next-btn").style.display = "none";
+  $("mc-action-row").style.display = "";
+  $("mc-show-answer-btn").disabled = false;
+  $("mc-check-btn").disabled = false;
+
+  if (window.matchMedia("(pointer:fine)").matches) $("mc-answer-input").focus();
+}
+
+function mcDoShowAnswer() {
+  MC.answerShown = true;
+  $("mc-show-answer-btn").disabled = true;
+  $("mc-show-answer-text").textContent = MC.currentCard.en;
+  $("mc-show-answer-area").style.display = "block";
+  $("mc-answer-input").focus();
+}
+
+function mcDoCheck() {
+  const input = $("mc-answer-input").value.trim();
+  if (!input) return;
+
+  const { exact, dist, ans } = bestMatchFromList(input, [MC.currentCard.en]);
+  const threshold = Math.max(2, Math.floor(norm(ans).length * 0.18));
+
+  if (exact) {
+    $("mc-result-word").textContent = "CORRECT";
+    $("mc-result-word").className = "result-word visible correct";
+    $("mc-result-note").textContent = "正解！よくできました。";
+    $("mc-result-note").className = "result-note visible";
+    $("mc-answer-reveal-text").textContent = ans;
+    $("mc-answer-reveal").className = "answer-reveal visible";
+    $("mc-show-answer-area").style.display = "none";
+    $("mc-action-row").style.display = "none";
+    $("mc-answer-input").disabled = true;
+    $("mc-next-btn").style.display = "block";
+  } else if (dist <= threshold) {
+    $("mc-result-word").textContent = "INCORRECT";
+    $("mc-result-word").className = "result-word visible incorrect";
+    $("mc-result-note").textContent = "惜しい！小さなミスがあります。";
+    $("mc-result-note").className = "result-note visible";
+    $("mc-show-answer-btn").disabled = MC.answerShown;
+  } else {
+    $("mc-result-word").textContent = "INCORRECT";
+    $("mc-result-word").className = "result-word visible incorrect";
+    $("mc-result-note").className = "result-note";
+    $("mc-show-answer-btn").disabled = MC.answerShown;
+  }
+}
+
+function mcDoNext() { MC.qIdx++; mcLoadQ(); }
+
+function mcBackToList() { mcShowList(); }
+
+function mcSpeakMyAnswer() { const v = $("mc-answer-input").value.trim(); if (v) speak(v); }
+function mcSpeakCorrect()  { if (MC.currentCard) speak(MC.currentCard.en); }
+
+$("mc-answer-input").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); mcDoCheck(); }
+});
+
+$("mc-en-input").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); mcSaveCard(); }
 });
 
 // ── START ─────────────────────────────────────────────────────────────────────
