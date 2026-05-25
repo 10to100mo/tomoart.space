@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English Practice — TOMO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100;0,200;0,300;1,100;1,200;1,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Josefin Sans', sans-serif;
+      font-weight: 300;
+      background: #fff;
+      color: #111;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 44px 28px 100px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 52px;
+    }
+
+    .back-link {
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      color: #aaa;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: #111; }
+
+    .app-title {
+      font-size: 16px;
+      font-weight: 300;
+      letter-spacing: 0.3em;
+    }
+
+    .level-badge {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: #888;
+      border: 1px solid #ddd;
+      padding: 4px 12px;
+    }
+
+    /* ── PROGRESS ── */
+    .progress-section { margin-bottom: 44px; }
+
+    .progress-label {
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      color: #bbb;
+      margin-bottom: 12px;
+    }
+
+    .progress-dots { display: flex; gap: 8px; }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border: 1px solid #ddd;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .dot.filled { background: #111; border-color: #111; }
+    .dot.partial { background: #ccc; border-color: #ccc; }
+
+    /* ── QUESTION CARD ── */
+    .question-card {
+      border: 1px solid #e8e8e8;
+      padding: 40px 36px;
+      margin-bottom: 36px;
+    }
+
+    .question-label {
+      font-size: 10px;
+      letter-spacing: 0.35em;
+      color: #ccc;
+      margin-bottom: 22px;
+    }
+
+    .question-text {
+      font-size: 30px;
+      font-weight: 200;
+      letter-spacing: 0.04em;
+      line-height: 1.5;
+    }
+
+    /* ── INPUT ── */
+    .input-section { margin-bottom: 28px; }
+
+    .input-label {
+      font-size: 10px;
+      letter-spacing: 0.35em;
+      color: #bbb;
+      margin-bottom: 10px;
+    }
+
+    .answer-input {
+      width: 100%;
+      font-family: 'Josefin Sans', sans-serif;
+      font-weight: 300;
+      font-size: 17px;
+      letter-spacing: 0.06em;
+      border: none;
+      border-bottom: 1px solid #111;
+      padding: 12px 0;
+      background: transparent;
+      color: #111;
+      outline: none;
+      resize: none;
+      min-height: 54px;
+      line-height: 1.6;
+      transition: border-color 0.15s;
+    }
+    .answer-input::placeholder { color: #ccc; }
+    .answer-input:disabled { opacity: 0.5; }
+
+    .speak-my-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 14px;
+      background: none;
+      border: none;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: #aaa;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .speak-my-btn:hover { color: #111; }
+    .speak-my-btn svg { width: 15px; height: 15px; fill: currentColor; }
+    .speak-my-btn.speaking { color: #111; }
+
+    /* ── HINT ── */
+    .hint-area {
+      display: none;
+      border-left: 2px solid #e0e0e0;
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      line-height: 1.9;
+    }
+    .hint-area.visible { display: block; }
+
+    .hint-label {
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      color: #bbb;
+      margin-bottom: 8px;
+    }
+
+    .hint-text {
+      font-size: 14px;
+      color: #555;
+      letter-spacing: 0.05em;
+    }
+    .hint-text strong { color: #111; font-weight: 400; }
+
+    /* ── FEEDBACK ── */
+    .feedback {
+      display: none;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      border: 1px solid;
+    }
+    .feedback.visible { display: block; }
+    .feedback.correct { border-color: #b2d8be; background: #f5fbf7; }
+    .feedback.almost  { border-color: #f0d080; background: #fffdf0; }
+    .feedback.wrong   { border-color: #f0c0c0; background: #fff8f8; }
+
+    .feedback-status {
+      font-size: 10px;
+      letter-spacing: 0.35em;
+      margin-bottom: 10px;
+    }
+    .feedback.correct .feedback-status { color: #2d7a4f; }
+    .feedback.almost  .feedback-status { color: #8a6000; }
+    .feedback.wrong   .feedback-status { color: #9a1c1c; }
+
+    .feedback-body {
+      font-size: 14px;
+      letter-spacing: 0.05em;
+      line-height: 2;
+      color: #333;
+    }
+
+    .answer-reveal {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #ebebeb;
+    }
+
+    .answer-reveal-label {
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      color: #bbb;
+      margin-bottom: 8px;
+    }
+
+    .answer-reveal-text {
+      font-size: 20px;
+      font-weight: 200;
+      letter-spacing: 0.07em;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .speak-answer-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: none;
+      border: none;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: #aaa;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .speak-answer-btn:hover { color: #111; }
+    .speak-answer-btn svg { width: 15px; height: 15px; fill: currentColor; }
+
+    /* ── ACTIONS ── */
+    .action-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      flex: 1;
+      background: none;
+      border: 1px solid #ddd;
+      padding: 15px 16px;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      color: #111;
+      transition: border-color 0.15s, opacity 0.15s;
+    }
+    .btn:hover:not(:disabled) { border-color: #999; }
+    .btn:disabled { opacity: 0.3; cursor: default; }
+
+    .btn-primary {
+      background: #111;
+      border-color: #111;
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) { background: #333; border-color: #333; }
+
+    .retry-row {
+      display: none;
+      margin-bottom: 16px;
+    }
+    .retry-row.visible { display: flex; gap: 12px; }
+
+    /* ── NEXT ── */
+    .next-btn {
+      display: none;
+      width: 100%;
+      background: #111;
+      border: none;
+      color: #fff;
+      padding: 18px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 16px;
+    }
+    .next-btn:hover { background: #333; }
+    .next-btn.visible { display: block; }
+
+    /* ── STATS ── */
+    .stats-bar {
+      display: flex;
+      gap: 36px;
+      margin-top: 52px;
+      padding-top: 24px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .stat { display: flex; flex-direction: column; gap: 4px; }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 100;
+      letter-spacing: 0.03em;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      color: #bbb;
+    }
+
+    /* ── OVERLAY SCREENS ── */
+    .overlay {
+      display: none;
+      text-align: center;
+      padding: 80px 0 40px;
+    }
+    .overlay.visible { display: block; }
+
+    .overlay-title {
+      font-size: 44px;
+      font-weight: 100;
+      letter-spacing: 0.12em;
+      margin-bottom: 24px;
+    }
+
+    .overlay-sub {
+      font-size: 13px;
+      letter-spacing: 0.2em;
+      color: #888;
+      line-height: 2.4;
+      margin-bottom: 60px;
+    }
+
+    .overlay-btn {
+      background: #111;
+      border: none;
+      color: #fff;
+      padding: 18px 60px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .overlay-btn:hover { background: #333; }
+
+    /* ── NO TTS WARNING ── */
+    .no-tts-note {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: #ccc;
+      margin-top: 8px;
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 480px) {
+      .container { padding: 32px 20px 80px; }
+      .question-text { font-size: 24px; }
+      .question-card { padding: 30px 24px; }
+      .overlay-title { font-size: 36px; }
+      .action-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <a href="/" class="back-link">← TOMO</a>
+    <span class="app-title">ENGLISH PRACTICE</span>
+    <span class="level-badge" id="level-badge">LV 1</span>
+  </div>
+
+  <!-- PRACTICE AREA -->
+  <div id="practice-area">
+
+    <!-- Progress -->
+    <div class="progress-section">
+      <div class="progress-label">LEVEL <span id="progress-level-num">1</span> — <span id="progress-level-name">Basic Phrases</span></div>
+      <div class="progress-dots" id="progress-dots"></div>
+    </div>
+
+    <!-- Question -->
+    <div class="question-card">
+      <div class="question-label">日本語 → 英語に訳してください</div>
+      <div class="question-text" id="question-text">—</div>
+    </div>
+
+    <!-- Input -->
+    <div class="input-section">
+      <div class="input-label">YOUR ANSWER  /  あなたの答え</div>
+      <textarea
+        class="answer-input"
+        id="answer-input"
+        placeholder="Type your English answer..."
+        rows="2"
+        autocomplete="off"
+        spellcheck="false"
+      ></textarea>
+      <button class="speak-my-btn" id="speak-my-btn" onclick="speakMyAnswer()">
+        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+        READ MY ANSWER
+      </button>
+    </div>
+
+    <!-- Hint area -->
+    <div class="hint-area" id="hint-area">
+      <div class="hint-label">HINT  /  ヒント</div>
+      <div class="hint-text" id="hint-text"></div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback" id="feedback">
+      <div class="feedback-status" id="feedback-status"></div>
+      <div class="feedback-body" id="feedback-body"></div>
+      <div class="answer-reveal" id="answer-reveal" style="display:none">
+        <div class="answer-reveal-label">CORRECT ANSWER  /  正解</div>
+        <div class="answer-reveal-text" id="answer-reveal-text"></div>
+        <button class="speak-answer-btn" onclick="speakCorrectAnswer()">
+          <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          LISTEN TO ANSWER
+        </button>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="action-row" id="action-row">
+      <button class="btn" id="hint-btn" onclick="doHint()">HINT</button>
+      <button class="btn btn-primary" id="check-btn" onclick="doCheck()">CHECK ANSWER</button>
+    </div>
+
+    <!-- Retry row (visible after "almost") -->
+    <div class="retry-row" id="retry-row">
+      <button class="btn" onclick="doRetry()">TRY AGAIN  /  もう一度</button>
+      <button class="btn" id="skip-btn" onclick="doNext()">SKIP →</button>
+    </div>
+
+    <!-- Next button -->
+    <button class="next-btn" id="next-btn" onclick="doNext()">NEXT QUESTION →</button>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat">
+        <span class="stat-value" id="stat-level">1</span>
+        <span class="stat-label">LEVEL</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="stat-correct">0</span>
+        <span class="stat-label">CORRECT</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="stat-streak">0</span>
+        <span class="stat-label">STREAK</span>
+      </div>
+    </div>
+
+  </div><!-- /practice-area -->
+
+  <!-- LEVEL UP SCREEN -->
+  <div class="overlay" id="levelup-screen">
+    <div class="overlay-title">LEVEL UP!</div>
+    <div class="overlay-sub" id="levelup-sub"></div>
+    <button class="overlay-btn" onclick="beginLevel()">CONTINUE →</button>
+  </div>
+
+  <!-- COMPLETE SCREEN -->
+  <div class="overlay" id="complete-screen">
+    <div class="overlay-title">COMPLETE!</div>
+    <div class="overlay-sub">
+      All 5 levels cleared!<br>
+      Excellent work.<br><br>
+      おめでとうございます！
+    </div>
+    <button class="overlay-btn" onclick="doRestart()">RESTART →</button>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ── QUESTIONS ────────────────────────────────────────────────────────────────
+
+const QUESTIONS = [
+  // LEVEL 1: Basic greetings & everyday phrases
+  { ja: "おはようございます。", en: ["Good morning."], level: 1 },
+  { ja: "こんにちは。", en: ["Hello.", "Hi.", "Good afternoon."], level: 1 },
+  { ja: "こんばんは。", en: ["Good evening."], level: 1 },
+  { ja: "おやすみなさい。", en: ["Good night."], level: 1 },
+  { ja: "ありがとうございます。", en: ["Thank you.", "Thanks."], level: 1 },
+  { ja: "どういたしまして。", en: ["You're welcome.", "Not at all.", "Don't mention it.", "My pleasure."], level: 1 },
+  { ja: "すみません。", en: ["Excuse me.", "Sorry.", "I'm sorry."], level: 1 },
+  { ja: "はじめまして。", en: ["Nice to meet you.", "Pleased to meet you."], level: 1 },
+  { ja: "お元気ですか？", en: ["How are you?", "How are you doing?"], level: 1 },
+  { ja: "元気です、ありがとう。", en: ["I'm fine, thank you.", "I'm good, thank you.", "I'm doing well, thank you."], level: 1 },
+  { ja: "さようなら。", en: ["Goodbye.", "Bye.", "See you."], level: 1 },
+  { ja: "また明日。", en: ["See you tomorrow."], level: 1 },
+  { ja: "わかりました。", en: ["I understand.", "Got it.", "I see.", "Understood."], level: 1 },
+  { ja: "お名前は何ですか？", en: ["What is your name?", "What's your name?"], level: 1 },
+  { ja: "よろしくお願いします。", en: ["Nice to meet you.", "I look forward to working with you.", "Please take care of me."], level: 1 },
+
+  // LEVEL 2: Basic situations
+  { ja: "私は学生です。", en: ["I am a student.", "I'm a student."], level: 2 },
+  { ja: "今日は天気がいいですね。", en: ["The weather is nice today.", "It's a nice day today.", "What a nice day!"], level: 2 },
+  { ja: "お腹が空きました。", en: ["I'm hungry.", "I am hungry."], level: 2 },
+  { ja: "疲れました。", en: ["I'm tired.", "I am tired.", "I'm exhausted."], level: 2 },
+  { ja: "水をください。", en: ["Water, please.", "Can I have some water?", "Could I have some water, please?"], level: 2 },
+  { ja: "お手洗いはどこですか？", en: ["Where is the restroom?", "Where is the bathroom?", "Where's the restroom?", "Where's the bathroom?"], level: 2 },
+  { ja: "いくらですか？", en: ["How much is it?", "How much does it cost?", "How much?"], level: 2 },
+  { ja: "もう一度言ってください。", en: ["Please say that again.", "Could you say that again?", "Pardon?", "Could you repeat that?"], level: 2 },
+  { ja: "英語が話せますか？", en: ["Do you speak English?", "Can you speak English?"], level: 2 },
+  { ja: "遅れてすみません。", en: ["Sorry I'm late.", "I'm sorry I'm late.", "I apologize for being late."], level: 2 },
+  { ja: "今何時ですか？", en: ["What time is it?", "What time is it now?"], level: 2 },
+  { ja: "助けてください。", en: ["Please help me.", "Help me, please.", "Help!"], level: 2 },
+  { ja: "ゆっくり話してください。", en: ["Please speak slowly.", "Could you speak slowly, please?", "Please speak more slowly."], level: 2 },
+  { ja: "これをください。", en: ["I'll take this.", "I'd like this one.", "This one, please.", "I'll have this."], level: 2 },
+  { ja: "近くにコンビニはありますか？", en: ["Is there a convenience store nearby?", "Is there a convenience store near here?"], level: 2 },
+
+  // LEVEL 3: Daily life situations
+  { ja: "駅までどう行けばいいですか？", en: ["How do I get to the station?", "How can I get to the station?", "Can you tell me how to get to the station?"], level: 3 },
+  { ja: "予約をしたいのですが。", en: ["I'd like to make a reservation.", "I want to make a reservation.", "Can I make a reservation?", "I'd like to book a table."], level: 3 },
+  { ja: "おすすめは何ですか？", en: ["What do you recommend?", "What's your recommendation?", "What would you recommend?"], level: 3 },
+  { ja: "お会計をお願いします。", en: ["Check, please.", "Can I have the bill?", "The bill, please.", "Could I have the check, please?"], level: 3 },
+  { ja: "試着してもいいですか？", en: ["Can I try this on?", "May I try this on?", "Could I try this on?"], level: 3 },
+  { ja: "返品できますか？", en: ["Can I return this?", "May I return this?", "Is it possible to return this?"], level: 3 },
+  { ja: "写真を撮ってもいいですか？", en: ["May I take a photo?", "Can I take a photo?", "Can I take a picture?", "Is it okay to take photos?"], level: 3 },
+  { ja: "迷子になってしまいました。", en: ["I'm lost.", "I got lost.", "I've gotten lost."], level: 3 },
+  { ja: "このバスは空港に行きますか？", en: ["Does this bus go to the airport?", "Will this bus take me to the airport?", "Is this the bus to the airport?"], level: 3 },
+  { ja: "アレルギーがあります。", en: ["I have allergies.", "I have an allergy.", "I'm allergic."], level: 3 },
+  { ja: "一緒に写真を撮ってもらえますか？", en: ["Could you take a photo of us?", "Can you take a photo of us?", "Would you mind taking a photo of us?"], level: 3 },
+  { ja: "どこかいいレストランを知っていますか？", en: ["Do you know any good restaurants?", "Do you know a good restaurant?", "Can you recommend a good restaurant?"], level: 3 },
+  { ja: "これはどんな料理ですか？", en: ["What kind of dish is this?", "What is this dish?", "What's this dish?"], level: 3 },
+  { ja: "タクシーを呼んでもらえますか？", en: ["Could you call a taxi for me?", "Can you call a taxi for me?", "Can you get me a taxi?"], level: 3 },
+  { ja: "チェックアウトは何時ですか？", en: ["What time is checkout?", "What time is check-out?", "When is checkout?", "What time do I need to check out?"], level: 3 },
+
+  // LEVEL 4: Conversational expressions
+  { ja: "それはあなた次第です。", en: ["It's up to you.", "That's up to you.", "It depends on you."], level: 4 },
+  { ja: "気が変わりました。", en: ["I changed my mind.", "I've changed my mind."], level: 4 },
+  { ja: "無理しないでください。", en: ["Don't push yourself too hard.", "Don't overdo it.", "Take it easy.", "Don't strain yourself."], level: 4 },
+  { ja: "後で連絡します。", en: ["I'll get back to you later.", "I'll contact you later.", "I'll reach out later.", "I'll be in touch."], level: 4 },
+  { ja: "考えさせてください。", en: ["Let me think about it.", "I need to think about it.", "Give me some time to think.", "I'll think about it."], level: 4 },
+  { ja: "もう少し詳しく教えてもらえますか？", en: ["Could you tell me more about it?", "Can you give me more details?", "Could you elaborate?", "Can you be more specific?"], level: 4 },
+  { ja: "おっしゃる通りです。", en: ["You're absolutely right.", "You're right.", "That's exactly right.", "I completely agree.", "Exactly."], level: 4 },
+  { ja: "うまくいくといいですね。", en: ["I hope it works out.", "I hope everything goes well.", "I hope it goes well.", "I hope things work out."], level: 4 },
+  { ja: "それは想定外でした。", en: ["That was unexpected.", "I didn't expect that.", "That came as a surprise.", "That was a surprise."], level: 4 },
+  { ja: "言いたいことはわかります。", en: ["I know what you mean.", "I understand what you're saying.", "I see what you mean.", "I get what you mean."], level: 4 },
+  { ja: "念のため確認しましょう。", en: ["Let's double-check just to be safe.", "Let's confirm just in case.", "Let me double-check.", "Let's make sure, just in case."], level: 4 },
+  { ja: "少し時間をもらえますか？", en: ["Can I have a moment?", "Could you give me a moment?", "Do you have a minute?", "Give me a moment, please."], level: 4 },
+  { ja: "はっきり言ってもらえますか？", en: ["Could you be more direct?", "Could you be more specific?", "Can you be more clear?", "Please be more direct."], level: 4 },
+  { ja: "それは冗談ですか？", en: ["Are you joking?", "Are you serious?", "Is that a joke?", "You're kidding, right?"], level: 4 },
+  { ja: "もう後戻りはできません。", en: ["There's no turning back now.", "We can't go back now.", "There's no going back.", "There's no turning back."], level: 4 },
+
+  // LEVEL 5: Natural & idiomatic English
+  { ja: "気にしないで。", en: ["Don't worry about it.", "Never mind.", "It's nothing.", "No worries."], level: 5 },
+  { ja: "何でも聞いてください。", en: ["Feel free to ask me anything.", "Please feel free to ask.", "Don't hesitate to ask.", "Ask me anything."], level: 5 },
+  { ja: "それは文脈によります。", en: ["It depends on the context.", "That depends on the context.", "It depends on context."], level: 5 },
+  { ja: "一石二鳥ですね。", en: ["That kills two birds with one stone.", "It kills two birds with one stone.", "Killing two birds with one stone."], level: 5 },
+  { ja: "急がば回れ。", en: ["Haste makes waste.", "More haste, less speed.", "Slow and steady wins the race."], level: 5 },
+  { ja: "言うは易く行うは難し。", en: ["Easier said than done.", "It's easier said than done.", "That's easier said than done."], level: 5 },
+  { ja: "今のところ問題ありません。", en: ["So far so good.", "No problems so far.", "Everything is fine so far.", "No issues so far."], level: 5 },
+  { ja: "郷に入れば郷に従え。", en: ["When in Rome, do as the Romans do.", "When in Rome, do as the Romans do"], level: 5 },
+  { ja: "その件についてはまだ検討中です。", en: ["We're still considering that matter.", "We're still looking into it.", "That's still under consideration.", "We're still working on that."], level: 5 },
+  { ja: "正直に言うと、よくわかりません。", en: ["To be honest, I'm not sure.", "Honestly, I'm not sure.", "To be honest, I don't really know.", "Honestly, I don't know."], level: 5 },
+  { ja: "結局のところ、あなたが正しかった。", en: ["In the end, you were right.", "After all, you were right.", "You were right all along.", "You turned out to be right."], level: 5 },
+  { ja: "時間が解決してくれます。", en: ["Time heals everything.", "Time heals all wounds.", "Things will work out in time.", "Time will tell."], level: 5 },
+  { ja: "良いことをすれば良いことが返ってくる。", en: ["What goes around comes around.", "You reap what you sow.", "Good things happen to good people."], level: 5 },
+  { ja: "初めの一歩が一番難しい。", en: ["The first step is the hardest.", "The hardest part is getting started.", "Taking the first step is the hardest."], level: 5 },
+  { ja: "百聞は一見にしかず。", en: ["Seeing is believing.", "A picture is worth a thousand words.", "One look is worth a thousand words."], level: 5 },
+];
+
+const LEVEL_NAMES = {
+  1: "Basic Phrases",
+  2: "Basic Situations",
+  3: "Daily Life",
+  4: "Conversational",
+  5: "Natural English",
+};
+
+const NEED_CORRECT = 5;
+const MAX_LEVEL = 5;
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+
+const S = {
+  level:        parseInt(localStorage.getItem("ep_lv")  || "1"),
+  totalCorrect: parseInt(localStorage.getItem("ep_ok")  || "0"),
+  streak:       0,
+  lvProgress:   0,
+  hintStep:     0,
+  answerShown:  false,
+  phase:        "input",  // input | almost | correct | wrong_retry
+  queue:        [],
+  qIdx:         0,
+  currentQ:     null,
+};
+
+if (S.level > MAX_LEVEL) { S.level = 1; localStorage.setItem("ep_lv", "1"); }
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = [];
+  for (let i = 0; i <= m; i++) {
+    dp[i] = [i];
+    for (let j = 1; j <= n; j++) dp[i][j] = i === 0 ? j : 0;
+  }
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1]
+        ? dp[i-1][j-1]
+        : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+function norm(s) {
+  return s.toLowerCase().trim().replace(/[.!?,]+$/, "").replace(/\s+/g, " ")
+          .replace(/'/g, "'").replace(/'/g, "'");
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function bestMatch(input, question) {
+  const normInput = norm(input);
+  let minDist = Infinity, best = question.en[0], exact = false;
+  for (const ans of question.en) {
+    const normAns = norm(ans);
+    if (normInput === normAns) { exact = true; best = ans; break; }
+    const d = levenshtein(normInput, normAns);
+    if (d < minDist) { minDist = d; best = ans; }
+  }
+  return { exact, dist: minDist, ans: best };
+}
+
+// ── INIT & LEVEL START ────────────────────────────────────────────────────────
+
+function init() {
+  beginLevel();
+}
+
+function beginLevel() {
+  hide("levelup-screen");
+  hide("complete-screen");
+  show("practice-area");
+
+  S.lvProgress = 0;
+  S.streak = 0;
+  S.queue  = shuffle(QUESTIONS.filter(q => q.level === S.level));
+  S.qIdx   = 0;
+
+  updateHeader();
+  loadQ();
+}
+
+function loadQ() {
+  if (S.qIdx >= S.queue.length) {
+    S.queue = shuffle(QUESTIONS.filter(q => q.level === S.level));
+    S.qIdx  = 0;
+  }
+
+  S.currentQ   = S.queue[S.qIdx];
+  S.hintStep   = 0;
+  S.answerShown = false;
+  S.phase      = "input";
+
+  $("question-text").textContent = S.currentQ.ja;
+  $("answer-input").value = "";
+  $("answer-input").disabled = false;
+
+  hide("hint-area");
+  hide("feedback");
+  hide("retry-row");
+  hide("next-btn");
+  show("action-row");
+
+  $("hint-btn").disabled  = false;
+  $("check-btn").disabled = false;
+  $("feedback").className = "feedback";
+  $("answer-reveal").style.display = "none";
+
+  updateProgressDots();
+  updateStats();
+
+  if (window.matchMedia("(pointer:fine)").matches) {
+    $("answer-input").focus();
+  }
+}
+
+// ── HINT ─────────────────────────────────────────────────────────────────────
+
+function doHint() {
+  S.hintStep++;
+  const primary = S.currentQ.en[0];
+  let html = "";
+
+  if (S.hintStep === 1) {
+    const first = primary.split(" ")[0];
+    html = `The answer starts with: <strong>${first}</strong>&nbsp;&nbsp;...`;
+  } else if (S.hintStep === 2) {
+    const half = primary.slice(0, Math.ceil(primary.length / 2));
+    html = `First half: <strong>${half}</strong>&nbsp;&nbsp;...`;
+  } else {
+    S.hintStep    = 3;
+    S.answerShown = true;
+    html = `Full answer: <strong>${primary}</strong>`;
+    $("hint-btn").disabled = true;
+  }
+
+  $("hint-text").innerHTML = html;
+  show("hint-area");
+}
+
+// ── CHECK ANSWER ─────────────────────────────────────────────────────────────
+
+function doCheck() {
+  const input = $("answer-input").value.trim();
+  if (!input) return;
+
+  const { exact, dist, ans } = bestMatch(input, S.currentQ);
+  const threshold = Math.max(2, Math.floor(norm(ans).length * 0.18));
+
+  if (exact) {
+    onCorrect(input, ans);
+  } else if (dist <= threshold) {
+    onAlmost(input, ans);
+  } else {
+    onWrong(input);
+  }
+}
+
+function onCorrect(input, ans) {
+  S.phase = "correct";
+
+  if (!S.answerShown) {
+    S.lvProgress++;
+    S.totalCorrect++;
+    S.streak++;
+    localStorage.setItem("ep_ok", S.totalCorrect);
+  }
+
+  setFeedback("correct",
+    S.answerShown ? "CORRECT  /  正解（ヒント使用）" : "CORRECT  /  正解！",
+    S.answerShown ? "Great — you got it with the hint." : "Perfect! Well done."
+  );
+  showAnswerReveal(ans);
+
+  hide("action-row");
+  hide("retry-row");
+  const btn = $("next-btn");
+  btn.style.display = "block";
+
+  if (S.lvProgress >= NEED_CORRECT) {
+    btn.textContent = "LEVEL COMPLETE →";
+    btn.onclick = doLevelComplete;
+  } else {
+    btn.textContent = "NEXT QUESTION →";
+    btn.onclick = doNext;
+  }
+
+  updateStats();
+  updateProgressDots();
+}
+
+function onAlmost(input, ans) {
+  S.phase = "almost";
+  S.streak = 0;
+
+  setFeedback("almost",
+    "ALMOST  /  惜しい！",
+    `Your answer: <em>${input}</em><br>There's a small mistake. Check the answer and try again.`
+  );
+  showAnswerReveal(ans);
+
+  hide("action-row");
+  show("retry-row");
+  $("answer-input").disabled = false;
+}
+
+function onWrong(input) {
+  S.phase  = "wrong_retry";
+  S.streak = 0;
+
+  setFeedback("wrong",
+    "NOT QUITE  /  もう一度！",
+    "Try again. Use the hint button if you need help."
+  );
+  hide("answer-reveal");
+
+  $("check-btn").disabled = false;
+  $("answer-input").disabled = false;
+}
+
+// ── RETRY / NEXT ─────────────────────────────────────────────────────────────
+
+function doRetry() {
+  hide("feedback");
+  hide("retry-row");
+  show("action-row");
+  $("answer-input").disabled = false;
+  $("check-btn").disabled = false;
+  $("answer-input").focus();
+}
+
+function doNext() {
+  S.qIdx++;
+  loadQ();
+}
+
+// ── LEVEL COMPLETE ────────────────────────────────────────────────────────────
+
+function doLevelComplete() {
+  if (S.level >= MAX_LEVEL) {
+    hide("practice-area");
+    show("complete-screen");
+    return;
+  }
+
+  S.level++;
+  localStorage.setItem("ep_lv", S.level);
+
+  hide("practice-area");
+  $("levelup-sub").innerHTML =
+    `Level ${S.level - 1} complete!<br>` +
+    `Advancing to Level ${S.level}:<br><br>` +
+    `<span style="font-size:12px;letter-spacing:0.3em">${LEVEL_NAMES[S.level]}</span>`;
+  show("levelup-screen");
+
+  updateHeader();
+}
+
+function doRestart() {
+  S.level = 1; S.totalCorrect = 0; S.streak = 0; S.lvProgress = 0;
+  localStorage.setItem("ep_lv", "1");
+  localStorage.setItem("ep_ok", "0");
+  hide("complete-screen");
+  beginLevel();
+}
+
+// ── TTS ───────────────────────────────────────────────────────────────────────
+
+const hasTTS = "speechSynthesis" in window;
+
+function speak(text) {
+  if (!hasTTS) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  u.rate = 0.88;
+  speechSynthesis.speak(u);
+}
+
+function speakMyAnswer() {
+  const v = $("answer-input").value.trim();
+  if (v) speak(v);
+}
+
+function speakCorrectAnswer() {
+  if (S.currentQ) speak(S.currentQ.en[0]);
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────────
+
+function $(id) { return document.getElementById(id); }
+function show(id) { const el = $(id); if (el) el.style.display = ""; }
+function hide(id) { const el = $(id); if (el) el.style.display = "none"; }
+
+function setFeedback(type, label, body) {
+  const fb = $("feedback");
+  fb.className = "feedback visible " + type;
+  $("feedback-status").textContent = label;
+  $("feedback-body").innerHTML     = body;
+}
+
+function showAnswerReveal(ans) {
+  $("answer-reveal-text").textContent = ans;
+  $("answer-reveal").style.display    = "block";
+}
+
+function updateHeader() {
+  $("level-badge").textContent     = "LV " + S.level;
+  $("stat-level").textContent      = S.level;
+  $("progress-level-num").textContent  = S.level;
+  $("progress-level-name").textContent = LEVEL_NAMES[S.level] || "";
+}
+
+function updateProgressDots() {
+  const c = $("progress-dots");
+  c.innerHTML = "";
+  for (let i = 0; i < NEED_CORRECT; i++) {
+    const d = document.createElement("div");
+    d.className = "dot" + (i < S.lvProgress ? " filled" : "");
+    c.appendChild(d);
+  }
+}
+
+function updateStats() {
+  $("stat-correct").textContent = S.totalCorrect;
+  $("stat-streak").textContent  = S.streak;
+}
+
+// Hide TTS buttons if not supported
+if (!hasTTS) {
+  document.querySelectorAll(".speak-my-btn, .speak-answer-btn").forEach(b => {
+    b.style.display = "none";
+  });
+}
+
+// Enter key to check
+$("answer-input").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    if (S.phase === "input" || S.phase === "wrong_retry") doCheck();
+  }
+});
+
+// ── START ─────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
