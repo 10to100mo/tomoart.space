@@ -438,6 +438,34 @@
       margin-top: 8px;
     }
 
+    /* ── REVIEW BAR ── */
+    .review-bar {
+      display: none;
+      margin-bottom: 32px;
+    }
+
+    .review-bar-btn {
+      width: 100%;
+      background: none;
+      border: 1px solid #f0d080;
+      padding: 14px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      color: #8a6000;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .review-bar-btn:hover { background: #fffdf0; }
+
+    .review-mode-label {
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      color: #8a6000;
+      margin-bottom: 12px;
+    }
+
     /* ── MOBILE ── */
     @media (max-width: 480px) {
       .container { padding: 32px 20px 80px; }
@@ -464,12 +492,19 @@
     <button class="tab" id="tab-mycards" onclick="switchTab('mycards')">マイカード</button>
   </div>
 
+  <!-- REVIEW BAR (shown when there are items to review) -->
+  <div class="review-bar" id="review-bar">
+    <button class="review-bar-btn" onclick="startReview()">
+      復習する — <span id="review-count">0</span>問
+    </button>
+  </div>
+
   <!-- ══ PRACTICE TAB ══ -->
   <div id="practice-area">
 
     <!-- Progress -->
     <div class="progress-section">
-      <div class="progress-label">LEVEL <span id="progress-level-num">1</span> — <span id="progress-level-name">Basic Phrases</span></div>
+      <div class="progress-label" id="progress-label">LEVEL <span id="progress-level-num">1</span> — <span id="progress-level-name">Basic Phrases</span></div>
       <div class="progress-dots" id="progress-dots"></div>
     </div>
 
@@ -792,6 +827,56 @@ if (!hasTTS) {
   document.querySelectorAll(".speak-my-btn, .speak-answer-btn").forEach(b => b.style.display = "none");
 }
 
+// ── WRONG LIST (復習) ─────────────────────────────────────────────────────────
+
+let wrongList = JSON.parse(localStorage.getItem("ep_wrong") || "[]");
+
+function saveWrong() { localStorage.setItem("ep_wrong", JSON.stringify(wrongList)); }
+
+function addToWrong(q) {
+  if (!wrongList.find(w => w.ja === q.ja)) {
+    wrongList.push({ ja: q.ja, en: Array.isArray(q.en) ? q.en : [q.en] });
+    saveWrong(); updateReviewBar();
+  }
+}
+
+function removeFromWrong(q) {
+  const before = wrongList.length;
+  wrongList = wrongList.filter(w => w.ja !== q.ja);
+  if (wrongList.length !== before) { saveWrong(); updateReviewBar(); }
+}
+
+function updateReviewBar() {
+  if (wrongList.length > 0) {
+    $("review-bar").style.display = "block";
+    $("review-count").textContent = wrongList.length;
+  } else {
+    $("review-bar").style.display = "none";
+  }
+}
+
+function startReview() {
+  S.reviewMode = true;
+  S.queue = shuffle(wrongList.map(w => ({ ja: w.ja, en: w.en })));
+  S.qIdx = 0;
+  S.lvProgress = 0;
+
+  // Show practice area
+  $("mycards-area").style.display = "none";
+  $("levelup-screen").style.display = "none";
+  $("complete-screen").style.display = "none";
+  $("practice-area").style.display = "";
+  $("tab-practice").classList.add("active");
+  $("tab-mycards").classList.remove("active");
+
+  loadQ();
+}
+
+function exitReview() {
+  S.reviewMode = false;
+  beginLevel();
+}
+
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
 
 function switchTab(tab) {
@@ -822,6 +907,7 @@ const S = {
   lvProgress:   0,
   answerShown:  false,
   phase:        "input",
+  reviewMode:   false,
   queue:        [],
   qIdx:         0,
   currentQ:     null,
@@ -829,7 +915,7 @@ const S = {
 
 if (S.level > MAX_LEVEL) { S.level = 1; localStorage.setItem("ep_lv", "1"); }
 
-function init() { beginLevel(); }
+function init() { updateReviewBar(); beginLevel(); }
 
 function beginLevel() {
   hideEl("levelup-screen");
@@ -867,7 +953,16 @@ function loadQ() {
   $("show-answer-btn").disabled = false;
   $("check-btn").disabled = false;
 
-  updateProgressDots();
+  if (S.reviewMode) {
+    const remaining = wrongList.length;
+    $("progress-label").innerHTML =
+      `<span style="color:#8a6000;letter-spacing:0.3em">復習モード — あと ${remaining}問</span>`;
+    $("progress-dots").innerHTML = "";
+  } else {
+    updateProgressDots();
+    updateHeader();
+  }
+
   updateStats();
   if (window.matchMedia("(pointer:fine)").matches) $("answer-input").focus();
 }
@@ -878,6 +973,7 @@ function doShowAnswer() {
   $("show-answer-text").textContent = S.currentQ.en[0];
   $("show-answer-area").style.display = "block";
   $("answer-input").focus();
+  if (!S.reviewMode) addToWrong(S.currentQ);
 }
 
 function doCheck() {
@@ -888,7 +984,12 @@ function doCheck() {
   const threshold = Math.max(2, Math.floor(norm(ans).length * 0.18));
 
   if (exact) {
-    if (!S.answerShown) { S.lvProgress++; S.totalCorrect++; S.streak++; localStorage.setItem("ep_ok", S.totalCorrect); }
+    if (!S.answerShown) {
+      if (!S.reviewMode) { S.lvProgress++; }
+      S.totalCorrect++; S.streak++;
+      localStorage.setItem("ep_ok", S.totalCorrect);
+      removeFromWrong(S.currentQ);
+    }
     $("result-word").textContent = "CORRECT";
     $("result-word").className = "result-word visible correct";
     $("result-note").textContent = "正解！よくできました。";
@@ -900,8 +1001,13 @@ function doCheck() {
     $("answer-input").disabled = true;
     const btn = $("next-btn");
     btn.style.display = "block";
-    btn.textContent = S.lvProgress >= NEED_CORRECT ? "LEVEL COMPLETE →" : "NEXT QUESTION →";
-    btn.onclick     = S.lvProgress >= NEED_CORRECT ? doLevelComplete : doNext;
+    if (S.reviewMode) {
+      btn.textContent = "NEXT →";
+      btn.onclick = doNext;
+    } else {
+      btn.textContent = S.lvProgress >= NEED_CORRECT ? "LEVEL COMPLETE →" : "NEXT QUESTION →";
+      btn.onclick     = S.lvProgress >= NEED_CORRECT ? doLevelComplete : doNext;
+    }
     updateStats(); updateProgressDots();
   } else if (dist <= threshold) {
     S.streak = 0;
@@ -923,7 +1029,34 @@ function doCheck() {
   }
 }
 
-function doNext() { S.qIdx++; loadQ(); }
+function doNext() {
+  S.qIdx++;
+  if (S.reviewMode && S.qIdx >= S.queue.length) {
+    // Review queue exhausted
+    S.reviewMode = false;
+    if (wrongList.length === 0) {
+      // All cleared!
+      $("practice-area").style.display = "none";
+      $("levelup-sub").innerHTML = "復習完了！<br>すべて正解しました。<br><br>おめでとうございます！";
+      $("levelup-screen").style.display = "block";
+      // Override the continue button to go back to normal practice
+      $("levelup-screen").querySelector(".overlay-btn").onclick = () => {
+        $("levelup-screen").style.display = "none";
+        beginLevel();
+      };
+    } else {
+      // Some still remain
+      $("practice-area").style.display = "none";
+      $("levelup-sub").innerHTML =
+        `一周しました！<br>まだ <strong style="font-size:20px;font-weight:200">${wrongList.length}</strong> 問残っています。`;
+      $("levelup-screen").style.display = "block";
+      $("levelup-screen").querySelector(".overlay-btn").textContent = "もう一度復習する →";
+      $("levelup-screen").querySelector(".overlay-btn").onclick = startReview;
+    }
+    return;
+  }
+  loadQ();
+}
 
 function doLevelComplete() {
   if (S.level >= MAX_LEVEL) {
@@ -1087,6 +1220,7 @@ function mcDoShowAnswer() {
   $("mc-show-answer-text").textContent = MC.currentCard.en;
   $("mc-show-answer-area").style.display = "block";
   $("mc-answer-input").focus();
+  addToWrong({ ja: MC.currentCard.ja, en: [MC.currentCard.en] });
 }
 
 function mcDoCheck() {
@@ -1097,6 +1231,7 @@ function mcDoCheck() {
   const threshold = Math.max(2, Math.floor(norm(ans).length * 0.18));
 
   if (exact) {
+    if (!MC.answerShown) removeFromWrong({ ja: MC.currentCard.ja });
     $("mc-result-word").textContent = "CORRECT";
     $("mc-result-word").className = "result-word visible correct";
     $("mc-result-note").textContent = "正解！よくできました。";
