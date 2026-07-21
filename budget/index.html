@@ -106,9 +106,11 @@
       flex: 1 1 auto; font-size: 14px; cursor: text; min-width: 0;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
+    .item-row:not(.depth-1) .item-name {
+      font-size: 15px; font-weight: 400; letter-spacing: 0.12em;
+    }
     .item-row.group-header .item-name {
-      flex: 1 1 100%; font-size: 15px; font-weight: 400; letter-spacing: 0.12em;
-      white-space: normal; margin-bottom: 2px;
+      flex: 1 1 100%; white-space: normal; margin-bottom: 2px;
     }
     .item-row.depth-1 .item-name { font-size: 13px; color: #444; }
     .item-name-input {
@@ -319,8 +321,8 @@ const STORAGE_KEY = 'tomo-budget-sheet-v1';
 
 function defaultTemplate() {
   return [
-    { id: uid(), name: '家賃', defaultAmount: 250500 },
-    { id: uid(), name: '讓一振込', defaultAmount: 150000 },
+    { id: uid(), name: '家賃', defaultAmount: 250500, noChildAdd: true },
+    { id: uid(), name: '讓一振込', defaultAmount: 150000, noChildAdd: true },
     { id: uid(), name: '食費', defaultAmount: null },
     { id: uid(), name: '雑費', defaultAmount: null },
     { id: uid(), name: '水道光熱費', defaultAmount: null },
@@ -371,7 +373,7 @@ function defaultData() {
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 
 function sanitizeTemplateItem(raw) {
-  const item = { id: raw.id || uid(), name: raw.name || '', defaultAmount: (typeof raw.defaultAmount === 'number') ? raw.defaultAmount : null };
+  const item = { id: raw.id || uid(), name: raw.name || '', defaultAmount: (typeof raw.defaultAmount === 'number') ? raw.defaultAmount : null, noChildAdd: !!raw.noChildAdd };
   if (Array.isArray(raw.children)) item.children = raw.children.map(sanitizeTemplateItem);
   return item;
 }
@@ -383,7 +385,8 @@ function sanitizeCycleItem(raw) {
     amount: (typeof raw.amount === 'number') ? raw.amount : null,
     payment: ['cash', 'card'].includes(raw.payment) ? raw.payment : 'none',
     date: (typeof raw.date === 'string' && raw.date) ? raw.date : null,
-    place: (typeof raw.place === 'string') ? raw.place : ''
+    place: (typeof raw.place === 'string') ? raw.place : '',
+    noChildAdd: !!raw.noChildAdd
   };
   if (Array.isArray(raw.children)) item.children = raw.children.map(sanitizeCycleItem);
   return item;
@@ -465,7 +468,7 @@ let currentCycle = cycleKeyForDate(new Date());
 
 function cloneTemplateToCycleItems(template) {
   return template.map(t => {
-    const item = { id: uid(), name: t.name, amount: t.defaultAmount, payment: 'none', date: null, place: '' };
+    const item = { id: uid(), name: t.name, amount: t.defaultAmount, payment: 'none', date: null, place: '', noChildAdd: !!t.noChildAdd };
     if (Array.isArray(t.children)) item.children = cloneTemplateToCycleItems(t.children);
     return item;
   });
@@ -600,7 +603,7 @@ function renderItemList() {
       group.appendChild(subtotal);
     }
 
-    if (!collapsed) {
+    if (!collapsed && !item.noChildAdd) {
       const addChildRow = document.createElement('div');
       addChildRow.className = 'add-child-row';
       const addChildBtn = document.createElement('button');
