@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>家計簿 | TOMO</title>
+  <title>FLOW | TOMO</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100;0,200;0,300;0,400;1,100;1,200;1,300&display=swap" rel="stylesheet" />
@@ -157,6 +157,14 @@
     }
     .row-btn:hover { color: #c0392b; }
 
+    .reorder-group { flex: 0 0 auto; display: flex; flex-direction: column; }
+    .reorder-btn {
+      background: none; border: none; color: #ccc; font-size: 9px; line-height: 1;
+      padding: 1px 4px; transition: color 0.15s;
+    }
+    .reorder-btn:hover:not(:disabled) { color: #111; }
+    .reorder-btn:disabled { color: #eee; cursor: default; }
+
     .group-subtotal {
       padding: 0 0 4px 24px; font-size: 11px; color: #aaa; letter-spacing: 0.1em;
     }
@@ -225,7 +233,7 @@
 <header class="topbar">
   <div class="topbar-row">
     <a class="home-link" href="/">← TOMO</a>
-    <h1 class="app-title">家計簿</h1>
+    <h1 class="app-title">FLOW</h1>
   </div>
   <nav class="tabs">
     <button class="tab-btn active" data-tab="sheet">シート</button>
@@ -471,7 +479,7 @@ let currentCycle = cycleKeyForDate(new Date());
 
 function cloneTemplateToCycleItems(template) {
   return template.map(t => {
-    const item = { id: uid(), name: t.name, amount: t.defaultAmount, payment: 'none', date: null, place: '', noChildAdd: !!t.noChildAdd };
+    const item = { id: t.id, name: t.name, amount: t.defaultAmount, payment: 'none', date: null, place: '', noChildAdd: !!t.noChildAdd };
     if (Array.isArray(t.children)) item.children = cloneTemplateToCycleItems(t.children);
     return item;
   });
@@ -555,9 +563,10 @@ document.getElementById('add-top-item-btn').addEventListener('click', () => {
   const name = prompt('新しい項目名を入力してください');
   if (!name || !name.trim()) return;
   const trimmed = name.trim();
-  data.template.push({ id: uid(), name: trimmed, defaultAmount: null });
+  const newId = uid();
+  data.template.push({ id: newId, name: trimmed, defaultAmount: null });
   const cycle = ensureCycle(currentCycle);
-  cycle.items.push({ id: uid(), name: trimmed, amount: null, payment: 'none' });
+  cycle.items.push({ id: newId, name: trimmed, amount: null, payment: 'none', date: null, place: '' });
   saveData();
   renderSheet();
   showToast('項目を追加しました');
@@ -618,13 +627,14 @@ function renderItemList() {
         const name = prompt('新しい小項目名を入力してください');
         if (!name || !name.trim()) return;
         const trimmed = name.trim();
+        const newChildId = uid();
         if (!Array.isArray(item.children)) item.children = [];
-        item.children.push({ id: uid(), name: trimmed, amount: null, payment: 'none', date: null, place: '' });
+        item.children.push({ id: newChildId, name: trimmed, amount: null, payment: 'none', date: null, place: '' });
 
         const tmplItem = data.template.find(t => t.id === item.id);
         if (tmplItem) {
           if (!Array.isArray(tmplItem.children)) tmplItem.children = [];
-          tmplItem.children.push({ id: uid(), name: trimmed, defaultAmount: null });
+          tmplItem.children.push({ id: newChildId, name: trimmed, defaultAmount: null });
         }
         saveData();
         renderSheet();
@@ -733,7 +743,58 @@ function buildItemRow(row, depth, siblingArray) {
   });
   el.appendChild(delBtn);
 
+  const reorderGroup = document.createElement('div');
+  reorderGroup.className = 'reorder-group';
+  const rowIdx = siblingArray.findIndex(r => r.id === row.id);
+
+  const upBtn = document.createElement('button');
+  upBtn.type = 'button';
+  upBtn.className = 'reorder-btn';
+  upBtn.textContent = '▲';
+  upBtn.title = '上に移動';
+  upBtn.disabled = rowIdx <= 0;
+  upBtn.addEventListener('click', () => moveRow(row, depth, siblingArray, -1));
+
+  const downBtn = document.createElement('button');
+  downBtn.type = 'button';
+  downBtn.className = 'reorder-btn';
+  downBtn.textContent = '▼';
+  downBtn.title = '下に移動';
+  downBtn.disabled = rowIdx < 0 || rowIdx >= siblingArray.length - 1;
+  downBtn.addEventListener('click', () => moveRow(row, depth, siblingArray, 1));
+
+  reorderGroup.append(upBtn, downBtn);
+  el.appendChild(reorderGroup);
+
   return el;
+}
+
+function findTemplateSiblingArray(id, depth) {
+  if (depth === 0) return data.template;
+  for (const t of data.template) {
+    if (Array.isArray(t.children) && t.children.some(c => c.id === id)) return t.children;
+  }
+  return null;
+}
+
+function moveRow(row, depth, siblingArray, direction) {
+  const idx = siblingArray.findIndex(r => r.id === row.id);
+  const newIdx = idx + direction;
+  if (idx < 0 || newIdx < 0 || newIdx >= siblingArray.length) return;
+  const [moved] = siblingArray.splice(idx, 1);
+  siblingArray.splice(newIdx, 0, moved);
+
+  const tmplArray = findTemplateSiblingArray(row.id, depth);
+  if (tmplArray) {
+    const tIdx = tmplArray.findIndex(t => t.id === row.id);
+    const tNewIdx = tIdx + direction;
+    if (tIdx >= 0 && tNewIdx >= 0 && tNewIdx < tmplArray.length) {
+      const [tMoved] = tmplArray.splice(tIdx, 1);
+      tmplArray.splice(tNewIdx, 0, tMoved);
+    }
+  }
+  saveData();
+  renderSheet();
 }
 
 function startRenameRow(rowEl, row, depth) {
