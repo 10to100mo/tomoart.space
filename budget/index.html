@@ -19,7 +19,7 @@
       color: #111;
       font-size: 13px;
       letter-spacing: 0.06em;
-      line-height: 1.8;
+      line-height: 1.35;
       -webkit-font-smoothing: antialiased;
     }
     a { color: inherit; text-decoration: none; }
@@ -75,7 +75,7 @@
     }
 
     .budget-total-row {
-      display: flex; align-items: center; gap: 10px; margin: 20px 0 28px;
+      display: flex; align-items: center; gap: 10px; margin: 10px 0 16px;
       font-size: 14px;
     }
     .budget-total-row label { color: #999; font-size: 12px; letter-spacing: 0.15em; }
@@ -86,21 +86,21 @@
     }
 
     /* ── SUMMARY CARDS ── */
-    .cards-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 36px; }
-    .card { flex: 1 1 130px; border: 1px solid #eee; padding: 16px; }
-    .card-label { font-size: 10px; letter-spacing: 0.15em; color: #999; margin-bottom: 8px; }
+    .cards-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+    .card { flex: 1 1 130px; border: 1px solid #eee; padding: 10px 12px; }
+    .card-label { font-size: 10px; letter-spacing: 0.15em; color: #999; margin-bottom: 4px; }
     .card-value { font-size: 18px; font-variant-numeric: tabular-nums; }
-    .card-value.cash { color: #c1691f; }
-    .card-value.card { color: #128a68; }
+    .card-value.cash { color: #ff6347; }
+    .card-value.card { color: #00ff7f; }
     .card-value.balance.positive { color: #1a6b3a; }
     .card-value.balance.negative { color: #c0392b; }
 
     /* ── ITEM ROWS ── */
-    .item-group { margin-bottom: 4px; border-bottom: 1px solid #eee; }
+    .item-group { margin-bottom: 0; border-bottom: 1px solid #eee; }
     .item-row {
-      display: flex; align-items: center; gap: 10px; padding: 12px 0;
+      display: flex; align-items: center; gap: 8px; padding: 4px 0;
     }
-    .item-row.depth-1 { padding-left: 24px; border-top: 1px dashed #f0f0f0; }
+    .item-row.depth-1 { padding-left: 24px; }
     .item-row.group-header { flex-wrap: wrap; }
     .item-name {
       flex: 1 1 auto; font-size: 14px; cursor: text; min-width: 0;
@@ -108,58 +108,74 @@
     }
     .item-row.group-header .item-name {
       flex: 1 1 100%; font-size: 15px; font-weight: 400; letter-spacing: 0.12em;
-      white-space: normal; margin-bottom: 4px;
+      white-space: normal; margin-bottom: 2px;
     }
     .item-row.depth-1 .item-name { font-size: 13px; color: #444; }
     .item-name-input {
       flex: 1 1 auto; border: none; border-bottom: 1px solid #111; background: transparent;
       font-size: 14px; font-family: inherit; outline: none; min-width: 0;
     }
+    .item-meta {
+      padding: 0 0 4px; font-size: 11px; color: #999; letter-spacing: 0.05em;
+    }
+    .item-meta.depth-1 { padding-left: 24px; }
 
     .amount-chip {
       flex: 0 0 auto; background: none; border: none; border-bottom: 1px solid #ccc;
-      font-size: 15px; padding: 4px 2px; color: #111; font-variant-numeric: tabular-nums;
+      font-size: 15px; padding: 2px 2px; color: #111; font-variant-numeric: tabular-nums;
       min-width: 90px; text-align: right; transition: border-color 0.15s, color 0.15s;
     }
     .amount-chip.empty { color: #ccc; font-size: 13px; }
     .amount-chip.none { border-color: #111; color: #111; }
-    .amount-chip.cash { border-color: #e0812c; color: #c1691f; }
-    .amount-chip.card { border-color: #23b489; color: #128a68; }
+    .amount-chip.cash { border-color: #ff6347; color: #ff6347; }
+    .amount-chip.card { border-color: #00ff7f; color: #00ff7f; }
 
     .amount-input {
       flex: 0 0 auto; width: 100px; border: none; border-bottom: 1px solid #111;
-      background: transparent; font-size: 15px; padding: 4px 2px; text-align: right;
+      background: transparent; font-size: 15px; padding: 2px 2px; text-align: right;
       outline: none; font-family: inherit; font-variant-numeric: tabular-nums;
+    }
+
+    .edit-form { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .edit-form input {
+      border: none; border-bottom: 1px solid #111; background: transparent;
+      font-size: 12px; padding: 2px; outline: none; font-family: inherit;
+    }
+    .edit-form .edit-date { width: 118px; }
+    .edit-form .edit-place { width: 90px; }
+    .edit-form .edit-amount { width: 90px; text-align: right; font-variant-numeric: tabular-nums; }
+    .edit-confirm {
+      background: none; border: none; color: #111; font-size: 14px; padding: 2px 6px;
     }
 
     .row-btn {
       flex: 0 0 auto; background: none; border: none; color: #ccc; font-size: 15px;
-      line-height: 1; padding: 4px 6px; transition: color 0.15s;
+      line-height: 1; padding: 2px 6px; transition: color 0.15s;
     }
     .row-btn:hover { color: #c0392b; }
 
     .group-subtotal {
-      padding: 6px 0 6px 24px; font-size: 11px; color: #aaa; letter-spacing: 0.1em;
+      padding: 0 0 4px 24px; font-size: 11px; color: #aaa; letter-spacing: 0.1em;
     }
 
-    .add-child-row { padding: 8px 0 8px 24px; }
+    .add-child-row { padding: 0 0 4px 24px; }
     .add-row-btn {
       background: none; border: none; font-size: 12px; letter-spacing: 0.1em;
-      color: #999; padding: 4px 0; transition: color 0.15s;
+      color: #999; padding: 2px 0; transition: color 0.15s;
     }
     .add-row-btn:hover { color: #111; }
 
-    .add-top-row { margin-top: 20px; }
+    .add-top-row { margin-top: 10px; }
 
     .grand-total-row {
       display: flex; justify-content: space-between; align-items: baseline;
-      padding: 20px 0; margin-top: 12px; border-top: 1px solid #111;
+      padding: 10px 0; margin-top: 6px; border-top: 1px solid #111;
       font-size: 15px;
     }
     .grand-total-row .value { font-variant-numeric: tabular-nums; font-size: 18px; }
 
     .legend {
-      display: flex; gap: 20px; font-size: 11px; color: #777; margin: 24px 0 8px; flex-wrap: wrap;
+      display: flex; gap: 20px; font-size: 11px; color: #777; margin: 12px 0 6px; flex-wrap: wrap;
     }
     .legend-swatch {
       display: inline-block; width: 10px; height: 10px; border-radius: 50%;
@@ -193,6 +209,9 @@
       .app-title { font-size: 20px; }
       .amount-chip, .amount-input { min-width: 74px; width: 80px; font-size: 13px; }
       .item-name { font-size: 13px; }
+      .edit-form .edit-date { width: 100px; }
+      .edit-form .edit-place { width: 70px; }
+      .edit-form .edit-amount { width: 70px; }
     }
   </style>
 </head>
@@ -242,8 +261,8 @@
 
     <div class="legend">
       <span><span class="legend-swatch" style="background:#111;"></span>未選択</span>
-      <span><span class="legend-swatch" style="background:#e0812c;"></span>現金</span>
-      <span><span class="legend-swatch" style="background:#23b489;"></span>カード</span>
+      <span><span class="legend-swatch" style="background:#ff6347;"></span>現金</span>
+      <span><span class="legend-swatch" style="background:#00ff7f;"></span>カード</span>
     </div>
 
     <div id="item-list"></div>
@@ -342,7 +361,8 @@ function defaultData() {
   return {
     template: defaultTemplate(),
     totalBudgetDefault: 700000,
-    cycles: {}
+    cycles: {},
+    collapsedGroups: {}
   };
 }
 
@@ -359,7 +379,9 @@ function sanitizeCycleItem(raw) {
     id: raw.id || uid(),
     name: raw.name || '',
     amount: (typeof raw.amount === 'number') ? raw.amount : null,
-    payment: ['cash', 'card'].includes(raw.payment) ? raw.payment : 'none'
+    payment: ['cash', 'card'].includes(raw.payment) ? raw.payment : 'none',
+    date: (typeof raw.date === 'string' && raw.date) ? raw.date : null,
+    place: (typeof raw.place === 'string') ? raw.place : ''
   };
   if (Array.isArray(raw.children)) item.children = raw.children.map(sanitizeCycleItem);
   return item;
@@ -386,7 +408,8 @@ function loadData() {
         };
       });
     }
-    return { template, totalBudgetDefault, cycles };
+    const collapsedGroups = (parsed.collapsedGroups && typeof parsed.collapsedGroups === 'object') ? parsed.collapsedGroups : {};
+    return { template, totalBudgetDefault, cycles, collapsedGroups };
   } catch (e) {
     console.error('データの読み込みに失敗しました', e);
     return defaultData();
@@ -440,10 +463,16 @@ let currentCycle = cycleKeyForDate(new Date());
 
 function cloneTemplateToCycleItems(template) {
   return template.map(t => {
-    const item = { id: uid(), name: t.name, amount: t.defaultAmount, payment: 'none' };
+    const item = { id: uid(), name: t.name, amount: t.defaultAmount, payment: 'none', date: null, place: '' };
     if (Array.isArray(t.children)) item.children = cloneTemplateToCycleItems(t.children);
     return item;
   });
+}
+
+function formatDateShort(iso) {
+  const parts = iso.split('-');
+  if (parts.length !== 3) return iso;
+  return `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`;
 }
 
 function ensureCycle(key) {
@@ -553,57 +582,86 @@ function renderItemList() {
     group.className = 'item-group';
     group.appendChild(buildItemRow(item, 0, cycle.items));
 
-    if (Array.isArray(item.children)) {
+    const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+    const collapsed = hasChildren && !!data.collapsedGroups[item.name];
+
+    if (hasChildren && !collapsed) {
       item.children.forEach(child => {
         group.appendChild(buildItemRow(child, 1, item.children));
       });
     }
 
-    if (Array.isArray(item.children) && item.children.length) {
+    if (hasChildren) {
       const subtotal = document.createElement('div');
       subtotal.className = 'group-subtotal';
       subtotal.textContent = '小計 ' + formatCurrency(groupTotal(item));
       group.appendChild(subtotal);
     }
 
-    const addChildRow = document.createElement('div');
-    addChildRow.className = 'add-child-row';
-    const addChildBtn = document.createElement('button');
-    addChildBtn.type = 'button';
-    addChildBtn.className = 'add-row-btn';
-    addChildBtn.textContent = '＋ 小項目を追加';
-    addChildBtn.addEventListener('click', () => {
-      const name = prompt('新しい小項目名を入力してください');
-      if (!name || !name.trim()) return;
-      const trimmed = name.trim();
-      if (!Array.isArray(item.children)) item.children = [];
-      item.children.push({ id: uid(), name: trimmed, amount: null, payment: 'none' });
+    if (!collapsed) {
+      const addChildRow = document.createElement('div');
+      addChildRow.className = 'add-child-row';
+      const addChildBtn = document.createElement('button');
+      addChildBtn.type = 'button';
+      addChildBtn.className = 'add-row-btn';
+      addChildBtn.textContent = '＋';
+      addChildBtn.title = '小項目を追加';
+      addChildBtn.addEventListener('click', () => {
+        const name = prompt('新しい小項目名を入力してください');
+        if (!name || !name.trim()) return;
+        const trimmed = name.trim();
+        if (!Array.isArray(item.children)) item.children = [];
+        item.children.push({ id: uid(), name: trimmed, amount: null, payment: 'none', date: null, place: '' });
 
-      const tmplItem = data.template.find(t => t.id === item.id);
-      if (tmplItem) {
-        if (!Array.isArray(tmplItem.children)) tmplItem.children = [];
-        tmplItem.children.push({ id: uid(), name: trimmed, defaultAmount: null });
-      }
-      saveData();
-      renderSheet();
-    });
-    addChildRow.appendChild(addChildBtn);
-    group.appendChild(addChildRow);
+        const tmplItem = data.template.find(t => t.id === item.id);
+        if (tmplItem) {
+          if (!Array.isArray(tmplItem.children)) tmplItem.children = [];
+          tmplItem.children.push({ id: uid(), name: trimmed, defaultAmount: null });
+        }
+        saveData();
+        renderSheet();
+      });
+      addChildRow.appendChild(addChildBtn);
+      group.appendChild(addChildRow);
+    }
 
     list.appendChild(group);
   });
 }
 
 function buildItemRow(row, depth, siblingArray) {
+  const wrapper = document.createElement('div');
   const el = document.createElement('div');
   const isGroupHeader = depth === 0 && Array.isArray(row.children) && row.children.length > 0;
   el.className = 'item-row' + (depth > 0 ? ' depth-1' : '') + (isGroupHeader ? ' group-header' : '');
 
   const nameEl = document.createElement('span');
   nameEl.className = 'item-name';
-  nameEl.textContent = row.name;
-  nameEl.title = 'ダブルクリックで名前を編集';
-  nameEl.addEventListener('dblclick', () => startRenameRow(el, row, depth));
+  const collapsed = isGroupHeader && !!data.collapsedGroups[row.name];
+  nameEl.textContent = (isGroupHeader ? (collapsed ? '▸ ' : '▾ ') : '') + row.name;
+
+  if (isGroupHeader) {
+    nameEl.title = 'クリックで折りたたみ / ダブルクリックで名前を編集';
+    nameEl.style.cursor = 'pointer';
+    let clickTimer = null;
+    nameEl.addEventListener('click', () => {
+      if (clickTimer) return;
+      clickTimer = setTimeout(() => {
+        clickTimer = null;
+        data.collapsedGroups[row.name] = !collapsed;
+        saveData();
+        renderSheet();
+      }, 250);
+    });
+    nameEl.addEventListener('dblclick', () => {
+      clearTimeout(clickTimer);
+      clickTimer = null;
+      startRenameRow(el, row, depth);
+    });
+  } else {
+    nameEl.title = 'ダブルクリックで名前を編集';
+    nameEl.addEventListener('dblclick', () => startRenameRow(el, row, depth));
+  }
   el.appendChild(nameEl);
 
   const amountBtn = document.createElement('button');
@@ -617,7 +675,7 @@ function buildItemRow(row, depth, siblingArray) {
     saveData();
     renderSheet();
   });
-  amountBtn.addEventListener('dblclick', () => startEditAmount(el, row));
+  amountBtn.addEventListener('dblclick', () => startEditEntry(el, row));
   el.appendChild(amountBtn);
 
   const editBtn = document.createElement('button');
@@ -625,8 +683,8 @@ function buildItemRow(row, depth, siblingArray) {
   editBtn.className = 'row-btn';
   editBtn.textContent = '✎';
   editBtn.style.color = '#bbb';
-  editBtn.title = '金額を編集';
-  editBtn.addEventListener('click', () => startEditAmount(el, row));
+  editBtn.title = '日付・場所・金額を編集';
+  editBtn.addEventListener('click', () => startEditEntry(el, row));
   el.appendChild(editBtn);
 
   const delBtn = document.createElement('button');
@@ -655,7 +713,19 @@ function buildItemRow(row, depth, siblingArray) {
   });
   el.appendChild(delBtn);
 
-  return el;
+  wrapper.appendChild(el);
+
+  if (row.date || row.place) {
+    const meta = document.createElement('div');
+    meta.className = 'item-meta' + (depth > 0 ? ' depth-1' : '');
+    const parts = [];
+    if (row.date) parts.push(formatDateShort(row.date));
+    if (row.place) parts.push(row.place);
+    meta.textContent = parts.join(' ・ ');
+    wrapper.appendChild(meta);
+  }
+
+  return wrapper;
 }
 
 function startRenameRow(rowEl, row, depth) {
@@ -694,28 +764,64 @@ function startRenameRow(rowEl, row, depth) {
   });
 }
 
-function startEditAmount(rowEl, row) {
+function startEditEntry(rowEl, row) {
   const chip = rowEl.querySelector('.amount-chip');
-  const input = document.createElement('input');
-  input.type = 'number';
-  input.className = 'amount-input';
-  input.step = '1';
-  input.value = row.amount === null ? '' : row.amount;
-  input.placeholder = '0';
-  chip.replaceWith(input);
-  input.focus();
-  input.select();
+  const form = document.createElement('div');
+  form.className = 'edit-form';
 
+  const dateInput = document.createElement('input');
+  dateInput.type = 'date';
+  dateInput.className = 'edit-date';
+  dateInput.value = row.date || '';
+
+  const placeInput = document.createElement('input');
+  placeInput.type = 'text';
+  placeInput.className = 'edit-place';
+  placeInput.placeholder = '場所';
+  placeInput.value = row.place || '';
+
+  const amountInput = document.createElement('input');
+  amountInput.type = 'number';
+  amountInput.className = 'edit-amount';
+  amountInput.step = '1';
+  amountInput.placeholder = '金額';
+  amountInput.value = row.amount === null ? '' : row.amount;
+
+  const confirmBtn = document.createElement('button');
+  confirmBtn.type = 'button';
+  confirmBtn.className = 'edit-confirm';
+  confirmBtn.textContent = '✓';
+
+  form.append(dateInput, placeInput, amountInput, confirmBtn);
+  chip.replaceWith(form);
+  dateInput.focus();
+
+  let committed = false;
   const commit = () => {
-    const val = parseFloat(input.value);
-    row.amount = (input.value.trim() === '' || isNaN(val)) ? null : val;
+    if (committed) return;
+    committed = true;
+    const val = parseFloat(amountInput.value);
+    row.amount = (amountInput.value.trim() === '' || isNaN(val)) ? null : val;
+    row.date = dateInput.value || null;
+    row.place = placeInput.value.trim();
     saveData();
     renderSheet();
   };
-  input.addEventListener('blur', commit);
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
-    if (e.key === 'Escape') { e.preventDefault(); renderSheet(); }
+  const cancel = () => {
+    if (committed) return;
+    committed = true;
+    renderSheet();
+  };
+
+  confirmBtn.addEventListener('click', commit);
+  [dateInput, placeInput, amountInput].forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); commit(); }
+      if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+    });
+  });
+  form.addEventListener('focusout', (e) => {
+    if (!form.contains(e.relatedTarget)) commit();
   });
 }
 
