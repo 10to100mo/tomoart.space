@@ -101,9 +101,14 @@
       display: flex; align-items: center; gap: 10px; padding: 12px 0;
     }
     .item-row.depth-1 { padding-left: 24px; border-top: 1px dashed #f0f0f0; }
+    .item-row.group-header { flex-wrap: wrap; }
     .item-name {
       flex: 1 1 auto; font-size: 14px; cursor: text; min-width: 0;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .item-row.group-header .item-name {
+      flex: 1 1 100%; font-size: 15px; font-weight: 400; letter-spacing: 0.12em;
+      white-space: normal; margin-bottom: 4px;
     }
     .item-row.depth-1 .item-name { font-size: 13px; color: #444; }
     .item-name-input {
@@ -312,13 +317,13 @@ function defaultTemplate() {
       { id: uid(), name: 'Apple iCloud', defaultAmount: 1500 },
       { id: uid(), name: 'Claude', defaultAmount: 3000 }
     ]},
-    { id: uid(), name: '礼 定期', defaultAmount: 20000, children: [
+    { id: uid(), name: '【 REI 】', defaultAmount: 20000, children: [
       { id: uid(), name: '小遣い', defaultAmount: null },
       { id: uid(), name: '美容院', defaultAmount: null },
       { id: uid(), name: '病院', defaultAmount: null },
       { id: uid(), name: '交通費', defaultAmount: null }
     ]},
-    { id: uid(), name: '倫 美容院', defaultAmount: null, children: [
+    { id: uid(), name: '【 TOMO 】', defaultAmount: null, children: [
       { id: uid(), name: '美容代', defaultAmount: null },
       { id: uid(), name: '病院', defaultAmount: null },
       { id: uid(), name: '整体', defaultAmount: null },
@@ -591,7 +596,8 @@ function renderItemList() {
 
 function buildItemRow(row, depth, siblingArray) {
   const el = document.createElement('div');
-  el.className = 'item-row' + (depth > 0 ? ' depth-1' : '');
+  const isGroupHeader = depth === 0 && Array.isArray(row.children) && row.children.length > 0;
+  el.className = 'item-row' + (depth > 0 ? ' depth-1' : '') + (isGroupHeader ? ' group-header' : '');
 
   const nameEl = document.createElement('span');
   nameEl.className = 'item-name';
