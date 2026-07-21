@@ -117,10 +117,17 @@
       flex: 1 1 auto; border: none; border-bottom: 1px solid #111; background: transparent;
       font-size: 14px; font-family: inherit; outline: none; min-width: 0;
     }
-    .item-meta {
-      padding: 0 0 4px; font-size: 11px; color: #999; letter-spacing: 0.05em;
+    .entry-fields { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+    .item-date {
+      flex: 0 0 auto; font-size: 11px; color: #999; letter-spacing: 0.02em;
+      min-width: 34px; text-align: right; white-space: nowrap;
     }
-    .item-meta.depth-1 { padding-left: 24px; }
+    .item-date.empty { color: #ddd; }
+    .item-place {
+      flex: 0 0 auto; font-size: 11px; color: #999; letter-spacing: 0.02em;
+      max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .item-place.empty { color: #ddd; }
 
     .amount-chip {
       flex: 0 0 auto; background: none; border: none; border-bottom: 1px solid #ccc;
@@ -131,12 +138,6 @@
     .amount-chip.none { border-color: #111; color: #111; }
     .amount-chip.cash { border-color: #ff6347; color: #ff6347; }
     .amount-chip.card { border-color: #00ff7f; color: #00ff7f; }
-
-    .amount-input {
-      flex: 0 0 auto; width: 100px; border: none; border-bottom: 1px solid #111;
-      background: transparent; font-size: 15px; padding: 2px 2px; text-align: right;
-      outline: none; font-family: inherit; font-variant-numeric: tabular-nums;
-    }
 
     .edit-form { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .edit-form input {
@@ -209,8 +210,10 @@
       .topbar { padding: 20px 18px 0; }
       .content { padding: 24px 18px 100px; }
       .app-title { font-size: 20px; }
-      .amount-chip, .amount-input { min-width: 74px; width: 80px; font-size: 13px; }
+      .amount-chip { min-width: 74px; width: 80px; font-size: 13px; }
       .item-name { font-size: 13px; }
+      .item-date { min-width: 30px; }
+      .item-place { max-width: 46px; }
       .edit-form .edit-date { width: 100px; }
       .edit-form .edit-place { width: 70px; }
       .edit-form .edit-amount { width: 70px; }
@@ -338,14 +341,14 @@ function defaultTemplate() {
       { id: uid(), name: 'Apple iCloud', defaultAmount: 1500 },
       { id: uid(), name: 'Claude', defaultAmount: 3000 }
     ]},
-    { id: uid(), name: '【 REI 】', defaultAmount: null, children: [
+    { id: uid(), name: 'REI', defaultAmount: null, children: [
       { id: uid(), name: '定期', defaultAmount: 20000 },
       { id: uid(), name: '小遣い', defaultAmount: null },
       { id: uid(), name: '美容院', defaultAmount: null },
       { id: uid(), name: '病院', defaultAmount: null },
       { id: uid(), name: '交通費', defaultAmount: null }
     ]},
-    { id: uid(), name: '【 TOMO 】', defaultAmount: null, children: [
+    { id: uid(), name: 'TOMO', defaultAmount: null, children: [
       { id: uid(), name: '美容院', defaultAmount: null },
       { id: uid(), name: '美容代', defaultAmount: null },
       { id: uid(), name: '病院', defaultAmount: null },
@@ -635,7 +638,6 @@ function renderItemList() {
 }
 
 function buildItemRow(row, depth, siblingArray) {
-  const wrapper = document.createElement('div');
   const el = document.createElement('div');
   const isGroupHeader = depth === 0 && Array.isArray(row.children) && row.children.length > 0;
   el.className = 'item-row' + (depth > 0 ? ' depth-1' : '') + (isGroupHeader ? ' group-header' : '');
@@ -669,6 +671,17 @@ function buildItemRow(row, depth, siblingArray) {
   }
   el.appendChild(nameEl);
 
+  const entryFields = document.createElement('div');
+  entryFields.className = 'entry-fields';
+
+  const dateEl = document.createElement('span');
+  dateEl.className = 'item-date' + (row.date ? '' : ' empty');
+  dateEl.textContent = row.date ? formatDateShort(row.date) : '–';
+
+  const placeEl = document.createElement('span');
+  placeEl.className = 'item-place' + (row.place ? '' : ' empty');
+  placeEl.textContent = row.place || '–';
+
   const amountBtn = document.createElement('button');
   amountBtn.type = 'button';
   amountBtn.className = 'amount-chip ' + row.payment + (row.amount === null ? ' empty' : '');
@@ -680,8 +693,10 @@ function buildItemRow(row, depth, siblingArray) {
     saveData();
     renderSheet();
   });
-  amountBtn.addEventListener('dblclick', () => startEditEntry(el, row));
-  el.appendChild(amountBtn);
+  amountBtn.addEventListener('dblclick', () => startEditEntry(entryFields, row));
+
+  entryFields.append(dateEl, placeEl, amountBtn);
+  el.appendChild(entryFields);
 
   const editBtn = document.createElement('button');
   editBtn.type = 'button';
@@ -689,7 +704,7 @@ function buildItemRow(row, depth, siblingArray) {
   editBtn.textContent = '✎';
   editBtn.style.color = '#bbb';
   editBtn.title = '日付・場所・金額を編集';
-  editBtn.addEventListener('click', () => startEditEntry(el, row));
+  editBtn.addEventListener('click', () => startEditEntry(entryFields, row));
   el.appendChild(editBtn);
 
   const delBtn = document.createElement('button');
@@ -718,19 +733,7 @@ function buildItemRow(row, depth, siblingArray) {
   });
   el.appendChild(delBtn);
 
-  wrapper.appendChild(el);
-
-  if (row.date || row.place) {
-    const meta = document.createElement('div');
-    meta.className = 'item-meta' + (depth > 0 ? ' depth-1' : '');
-    const parts = [];
-    if (row.date) parts.push(formatDateShort(row.date));
-    if (row.place) parts.push(row.place);
-    meta.textContent = parts.join(' ・ ');
-    wrapper.appendChild(meta);
-  }
-
-  return wrapper;
+  return el;
 }
 
 function startRenameRow(rowEl, row, depth) {
@@ -769,8 +772,7 @@ function startRenameRow(rowEl, row, depth) {
   });
 }
 
-function startEditEntry(rowEl, row) {
-  const chip = rowEl.querySelector('.amount-chip');
+function startEditEntry(fieldsEl, row) {
   const form = document.createElement('div');
   form.className = 'edit-form';
 
@@ -798,7 +800,7 @@ function startEditEntry(rowEl, row) {
   confirmBtn.textContent = '✓';
 
   form.append(dateInput, placeInput, amountInput, confirmBtn);
-  chip.replaceWith(form);
+  fieldsEl.replaceWith(form);
   dateInput.focus();
 
   let committed = false;
@@ -825,8 +827,13 @@ function startEditEntry(rowEl, row) {
       if (e.key === 'Escape') { e.preventDefault(); cancel(); }
     });
   });
-  form.addEventListener('focusout', (e) => {
-    if (!form.contains(e.relatedTarget)) commit();
+  form.addEventListener('focusout', () => {
+    // Native <input type="date"> pickers can fire focusout without a
+    // usable relatedTarget, so re-check after focus has settled instead
+    // of trusting the event's relatedTarget directly.
+    setTimeout(() => {
+      if (!form.contains(document.activeElement)) commit();
+    }, 0);
   });
 }
 
