@@ -336,13 +336,15 @@ function defaultTemplate() {
       { id: uid(), name: 'Apple iCloud', defaultAmount: 1500 },
       { id: uid(), name: 'Claude', defaultAmount: 3000 }
     ]},
-    { id: uid(), name: '【 REI 】', defaultAmount: 20000, children: [
+    { id: uid(), name: '【 REI 】', defaultAmount: null, children: [
+      { id: uid(), name: '定期', defaultAmount: 20000 },
       { id: uid(), name: '小遣い', defaultAmount: null },
       { id: uid(), name: '美容院', defaultAmount: null },
       { id: uid(), name: '病院', defaultAmount: null },
       { id: uid(), name: '交通費', defaultAmount: null }
     ]},
     { id: uid(), name: '【 TOMO 】', defaultAmount: null, children: [
+      { id: uid(), name: '美容院', defaultAmount: null },
       { id: uid(), name: '美容代', defaultAmount: null },
       { id: uid(), name: '病院', defaultAmount: null },
       { id: uid(), name: '整体', defaultAmount: null },
