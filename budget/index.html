@@ -144,7 +144,7 @@
       border: none; border-bottom: 1px solid #111; background: transparent;
       font-size: 12px; padding: 2px; outline: none; font-family: inherit;
     }
-    .edit-form .edit-date { width: 118px; }
+    .edit-form .edit-date { width: 64px; }
     .edit-form .edit-place { width: 90px; }
     .edit-form .edit-amount { width: 90px; text-align: right; font-variant-numeric: tabular-nums; }
     .edit-confirm {
@@ -214,7 +214,7 @@
       .item-name { font-size: 13px; }
       .item-date { min-width: 30px; }
       .item-place { max-width: 46px; }
-      .edit-form .edit-date { width: 100px; }
+      .edit-form .edit-date { width: 56px; }
       .edit-form .edit-place { width: 70px; }
       .edit-form .edit-amount { width: 70px; }
     }
@@ -777,8 +777,9 @@ function startEditEntry(fieldsEl, row) {
   form.className = 'edit-form';
 
   const dateInput = document.createElement('input');
-  dateInput.type = 'date';
+  dateInput.type = 'text';
   dateInput.className = 'edit-date';
+  dateInput.placeholder = '7/20';
   dateInput.value = row.date || '';
 
   const placeInput = document.createElement('input');
@@ -828,9 +829,8 @@ function startEditEntry(fieldsEl, row) {
     });
   });
   form.addEventListener('focusout', () => {
-    // Native <input type="date"> pickers can fire focusout without a
-    // usable relatedTarget, so re-check after focus has settled instead
-    // of trusting the event's relatedTarget directly.
+    // relatedTarget isn't reliable on all mobile browsers, so re-check
+    // after focus has settled instead of trusting it directly.
     setTimeout(() => {
       if (!form.contains(document.activeElement)) commit();
     }, 0);
