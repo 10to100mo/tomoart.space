@@ -375,14 +375,14 @@ function defaultTemplate() {
       { id: uid(), name: '小遣い', defaultAmount: null },
       { id: uid(), name: '美容院', defaultAmount: null },
       { id: uid(), name: '病院', defaultAmount: null },
-      { id: uid(), name: '交通費', defaultAmount: null }
+      { id: uid(), name: '交通費', defaultAmount: null, repeatable: true }
     ]},
     { id: uid(), name: 'TOMO', defaultAmount: null, noChildAdd: true, children: [
       { id: uid(), name: '美容院', defaultAmount: null },
       { id: uid(), name: '美容代', defaultAmount: null },
       { id: uid(), name: '病院', defaultAmount: null },
       { id: uid(), name: '整体', defaultAmount: null },
-      { id: uid(), name: '交通費', defaultAmount: null }
+      { id: uid(), name: '交通費', defaultAmount: null, repeatable: true }
     ]},
     { id: uid(), name: 'Suica', defaultAmount: null },
     { id: uid(), name: '分割払い残高', defaultAmount: null, noChildAdd: true, children: [
@@ -405,7 +405,7 @@ function defaultData() {
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 
 function sanitizeTemplateItem(raw) {
-  const item = { id: raw.id || uid(), name: raw.name || '', defaultAmount: (typeof raw.defaultAmount === 'number') ? raw.defaultAmount : null, noChildAdd: !!raw.noChildAdd, autoEntries: !!raw.autoEntries };
+  const item = { id: raw.id || uid(), name: raw.name || '', defaultAmount: (typeof raw.defaultAmount === 'number') ? raw.defaultAmount : null, noChildAdd: !!raw.noChildAdd, autoEntries: !!raw.autoEntries, repeatable: !!raw.repeatable };
   if (Array.isArray(raw.children)) item.children = raw.children.map(sanitizeTemplateItem);
   return item;
 }
@@ -419,7 +419,8 @@ function sanitizeCycleItem(raw) {
     date: (typeof raw.date === 'string' && raw.date) ? raw.date : null,
     place: (typeof raw.place === 'string') ? raw.place : '',
     noChildAdd: !!raw.noChildAdd,
-    autoEntries: !!raw.autoEntries
+    autoEntries: !!raw.autoEntries,
+    repeatable: !!raw.repeatable
   };
   if (Array.isArray(raw.children)) item.children = raw.children.map(sanitizeCycleItem);
   return item;
@@ -501,7 +502,7 @@ let currentCycle = cycleKeyForDate(new Date());
 
 function cloneTemplateToCycleItems(template) {
   return template.map(t => {
-    const item = { id: t.id, name: t.name, amount: t.defaultAmount, payment: 'none', date: null, place: '', noChildAdd: !!t.noChildAdd, autoEntries: !!t.autoEntries };
+    const item = { id: t.id, name: t.name, amount: t.defaultAmount, payment: 'none', date: null, place: '', noChildAdd: !!t.noChildAdd, autoEntries: !!t.autoEntries, repeatable: !!t.repeatable };
     if (Array.isArray(t.children)) item.children = cloneTemplateToCycleItems(t.children);
     return item;
   });
@@ -522,6 +523,7 @@ function syncStructuralFlags(items, templateItems) {
     if (!t) return;
     item.noChildAdd = !!t.noChildAdd;
     item.autoEntries = !!t.autoEntries;
+    item.repeatable = !!t.repeatable;
     // Non-destructive: only initialize an empty children array when the
     // item doesn't already have one (a group with real children is never
     // touched here).
@@ -651,6 +653,27 @@ function ensureAutoEntrySlot(item) {
   }
 }
 
+// For specific named children marked repeatable in the template (e.g.
+// REI/TOMOの交通費, which can happen more than once per cycle): keep one
+// blank instance of that name ready right after the last one, and
+// re-seed it if every instance was deleted. Derives the list of
+// repeatable names from the template (not the live children) so it
+// survives a full delete.
+function ensureRepeatableSlots(item) {
+  if (!Array.isArray(item.children)) return;
+  const tmplItem = data.template.find(t => t.id === item.id);
+  if (!tmplItem || !Array.isArray(tmplItem.children)) return;
+  tmplItem.children.filter(c => c.repeatable).map(c => c.name).forEach(name => {
+    const entries = item.children.filter(c => c.name === name);
+    const last = entries[entries.length - 1];
+    if (!last || last.amount !== null) {
+      const insertAfter = last ? item.children.lastIndexOf(last) : item.children.length - 1;
+      item.children.splice(insertAfter + 1, 0, { id: uid(), name, amount: null, payment: 'none', date: null, place: '', repeatable: true });
+      saveData();
+    }
+  });
+}
+
 /* ── RENDER: ITEM LIST ── */
 function renderItemList() {
   const cycle = ensureCycle(currentCycle);
@@ -659,6 +682,7 @@ function renderItemList() {
 
   cycle.items.forEach(item => {
     if (item.autoEntries) ensureAutoEntrySlot(item);
+    else if (Array.isArray(item.children)) ensureRepeatableSlots(item);
 
     const group = document.createElement('div');
     group.className = 'item-group';
@@ -670,7 +694,7 @@ function renderItemList() {
 
     if (hasChildren && !collapsed) {
       item.children.forEach(child => {
-        group.appendChild(buildItemRow(child, 1, item.children));
+        group.appendChild(buildItemRow(child, 1, item.children, !!item.autoEntries));
       });
     }
 
@@ -713,7 +737,7 @@ function renderItemList() {
   });
 }
 
-function buildItemRow(row, depth, siblingArray) {
+function buildItemRow(row, depth, siblingArray, forceBlankName) {
   const el = document.createElement('div');
   const isGroupHeader = depth === 0 && Array.isArray(row.children);
   el.className = 'item-row' + (depth > 0 ? ' depth-1' : '') + (isGroupHeader ? ' group-header' : '');
@@ -722,10 +746,10 @@ function buildItemRow(row, depth, siblingArray) {
   nameEl.className = 'item-name';
   const collapsed = isGroupHeader && !!data.collapsedGroups[row.name];
   nameEl.textContent = (isGroupHeader ? (collapsed ? '▸ ' : '▾ ') : '') + row.name;
-  if (depth > 0 && !row.name.trim()) {
-    // A blank child name would still claim flexible width based on any
-    // stray whitespace, throwing off alignment between rows — collapse it
-    // to a hard zero so date/place/amount always start at the same spot.
+  if (depth > 0 && forceBlankName) {
+    // Auto-entry log rows never show a name — always collapse to a hard
+    // zero width (regardless of any stray leftover text) so date/place/
+    // amount start at the exact same spot on every row.
     nameEl.style.flex = '0 0 0';
     nameEl.style.width = '0';
     nameEl.style.overflow = 'hidden';
