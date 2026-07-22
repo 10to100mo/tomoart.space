@@ -87,7 +87,7 @@
     }
     .budget-total-row label { color: #999; font-size: 14px; letter-spacing: 0.15em; }
     .budget-total-input {
-      border: none; border-bottom: 0.5px solid rgba(255,255,255,0.15); background: transparent;
+      border: none; border-bottom: none; background: transparent;
       color: #fff; font-size: 22px; padding: 4px 2px; width: 150px; text-align: right; outline: none;
       font-variant-numeric: tabular-nums;
     }
@@ -121,7 +121,7 @@
     }
     .item-row.depth-1 .item-name { font-size: 16px; color: #aaa; }
     .item-name-input {
-      flex: 1 1 auto; border: none; border-bottom: 0.5px solid rgba(255,255,255,0.15); background: transparent;
+      flex: 1 1 auto; border: none; border-bottom: none; background: transparent;
       color: #fff; font-size: 17px; font-family: inherit; outline: none; min-width: 0;
     }
     .entry-fields { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
@@ -148,7 +148,7 @@
 
     .edit-form { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .edit-form input {
-      border: none; border-bottom: 0.5px solid rgba(255,255,255,0.15); background: transparent;
+      border: none; border-bottom: none; background: transparent;
       color: #fff; font-size: 14px; padding: 2px; outline: none; font-family: inherit;
     }
     .edit-form .edit-date { width: 64px; }
@@ -163,6 +163,15 @@
       line-height: 1; padding: 2px 6px; transition: color 0.15s;
     }
     .row-btn:hover { color: #f87171; }
+
+    /* ── SWIPE TO DELETE ── */
+    .item-row-wrap { position: relative; overflow: hidden; }
+    .swipe-delete-btn {
+      position: absolute; top: 0; right: 0; bottom: 0; width: 72px;
+      background: #c0392b; color: #fff; border: none; font-size: 14px;
+      letter-spacing: 0.15em; display: flex; align-items: center; justify-content: center;
+    }
+    .item-row { background: #111; position: relative; z-index: 1; touch-action: pan-y; }
 
     .reorder-group { flex: 0 0 auto; display: flex; flex-direction: column; }
     .reorder-btn {
@@ -205,7 +214,7 @@
     .sub-heading { font-size: 14px; letter-spacing: 0.2em; color: #aaa; margin-bottom: 16px; }
     .field-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
     .field-row label { font-size: 14px; color: #777; flex: 0 0 140px; }
-    .field-row input { border: none; border-bottom: 0.5px solid rgba(255,255,255,0.15); background: transparent; color: #fff; padding: 6px 2px; font-size: 16px; outline: none; width: 140px; text-align: right; }
+    .field-row input { border: none; border-bottom: none; background: transparent; color: #fff; padding: 6px 2px; font-size: 16px; outline: none; width: 140px; text-align: right; }
     .ghost-btn {
       background: none; border: 1px solid #3a3a3a; padding: 10px 20px; font-size: 14px;
       letter-spacing: 0.15em; color: #999; transition: all 0.15s;
@@ -549,6 +558,11 @@ function groupTotal(row) {
   return total;
 }
 
+/* ── CLOSE OPEN SWIPE ROWS ON OUTSIDE TAP ── */
+document.addEventListener('pointerdown', (e) => {
+  if (!e.target.closest('.item-row-wrap')) closeOpenSwipeRows();
+});
+
 /* ── TABS ── */
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -740,12 +754,7 @@ function buildItemRow(row, depth, siblingArray) {
   editBtn.addEventListener('click', () => startEditEntry(entryFields, row));
   el.appendChild(editBtn);
 
-  const delBtn = document.createElement('button');
-  delBtn.type = 'button';
-  delBtn.className = 'row-btn';
-  delBtn.textContent = '×';
-  delBtn.title = '削除';
-  delBtn.addEventListener('click', () => {
+  const doDelete = () => {
     if (!confirm(`「${row.name}」を削除しますか?`)) return;
     const idx = siblingArray.findIndex(r => r.id === row.id);
     if (idx >= 0) siblingArray.splice(idx, 1);
@@ -763,8 +772,7 @@ function buildItemRow(row, depth, siblingArray) {
     saveData();
     renderSheet();
     showToast('削除しました');
-  });
-  el.appendChild(delBtn);
+  };
 
   const reorderGroup = document.createElement('div');
   reorderGroup.className = 'reorder-group';
@@ -789,7 +797,82 @@ function buildItemRow(row, depth, siblingArray) {
   reorderGroup.append(upBtn, downBtn);
   el.appendChild(reorderGroup);
 
-  return el;
+  const wrap = document.createElement('div');
+  wrap.className = 'item-row-wrap';
+
+  const swipeDeleteBtn = document.createElement('button');
+  swipeDeleteBtn.type = 'button';
+  swipeDeleteBtn.className = 'swipe-delete-btn';
+  swipeDeleteBtn.textContent = '削除';
+  swipeDeleteBtn.addEventListener('click', doDelete);
+
+  wrap.append(swipeDeleteBtn, el);
+  attachSwipeToDelete(el);
+
+  return wrap;
+}
+
+const SWIPE_REVEAL = 72;
+
+function closeOpenSwipeRows(except) {
+  document.querySelectorAll('.item-row.swipe-open').forEach(r => {
+    if (r === except) return;
+    r.style.transition = 'transform 0.2s ease';
+    r.style.transform = 'translateX(0)';
+    r.classList.remove('swipe-open');
+  });
+}
+
+function attachSwipeToDelete(rowEl) {
+  let startX = 0, startY = 0, baseX = 0, currentX = 0, axis = null, dragging = false, pointerId = null;
+
+  rowEl.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    startX = e.clientX;
+    startY = e.clientY;
+    baseX = rowEl.classList.contains('swipe-open') ? -SWIPE_REVEAL : 0;
+    currentX = baseX;
+    axis = null;
+    dragging = true;
+    pointerId = e.pointerId;
+    rowEl.style.transition = 'none';
+  });
+
+  rowEl.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    if (axis === null) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      // Only capture (and take over from whatever was under the pointer)
+      // once we know this is actually a horizontal swipe, not a tap.
+      if (axis === 'x') {
+        rowEl.setPointerCapture(pointerId);
+        closeOpenSwipeRows(rowEl);
+      }
+    }
+    if (axis !== 'x') return;
+    e.preventDefault();
+    currentX = Math.min(0, Math.max(-SWIPE_REVEAL, baseX + dx));
+    rowEl.style.transform = `translateX(${currentX}px)`;
+  });
+
+  const endDrag = () => {
+    if (!dragging) return;
+    dragging = false;
+    rowEl.style.transition = 'transform 0.2s ease';
+    if (axis === 'x' && currentX < -SWIPE_REVEAL / 2) {
+      rowEl.style.transform = `translateX(-${SWIPE_REVEAL}px)`;
+      rowEl.classList.add('swipe-open');
+    } else {
+      rowEl.style.transform = 'translateX(0)';
+      rowEl.classList.remove('swipe-open');
+    }
+    axis = null;
+  };
+  rowEl.addEventListener('pointerup', endDrag);
+  rowEl.addEventListener('pointercancel', endDrag);
 }
 
 function findTemplateSiblingArray(id, depth) {
