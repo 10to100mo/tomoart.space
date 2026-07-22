@@ -367,31 +367,30 @@ function defaultTemplate() {
     { id: uid(), name: '食費', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
     { id: uid(), name: '雑費', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
     { id: uid(), name: '水道光熱費', defaultAmount: null },
-    { id: uid(), name: '通信費', defaultAmount: null },
+    { id: uid(), name: '通信費', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
     { id: uid(), name: 'サブスク', defaultAmount: null, noChildAdd: true, children: [
-      { id: uid(), name: 'YouTubeファミリー', defaultAmount: 2280 },
-      { id: uid(), name: 'Netflix', defaultAmount: 2290 },
-      { id: uid(), name: 'Amazonプライム', defaultAmount: null },
-      { id: uid(), name: 'Apple MUSIC', defaultAmount: 1680 },
-      { id: uid(), name: 'AppleCare', defaultAmount: 900 },
-      { id: uid(), name: 'AppleCare', defaultAmount: 1350 },
-      { id: uid(), name: '礼のiPad', defaultAmount: 650 },
-      { id: uid(), name: 'Apple iCloud', defaultAmount: 1500 },
-      { id: uid(), name: 'Claude', defaultAmount: 3000 }
+      { id: uid(), name: 'YouTubeファミリー', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: 'Netflix', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: 'Amazonプライム', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: 'Apple MUSIC', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: 'AppleCare', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: '礼のiPad', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: 'Apple iCloud', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: 'Claude', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] }
     ]},
     { id: uid(), name: 'REI', defaultAmount: null, noChildAdd: true, children: [
-      { id: uid(), name: '定期', defaultAmount: 20000 },
-      { id: uid(), name: '小遣い', defaultAmount: null },
-      { id: uid(), name: '美容院', defaultAmount: null },
-      { id: uid(), name: '病院', defaultAmount: null },
-      { id: uid(), name: '交通費', defaultAmount: null, repeatable: true }
+      { id: uid(), name: '定期', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: '小遣い', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: '美容院', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: '病院', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: '交通費', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] }
     ]},
     { id: uid(), name: 'TOMO', defaultAmount: null, noChildAdd: true, children: [
-      { id: uid(), name: '美容院', defaultAmount: null },
-      { id: uid(), name: '美容代', defaultAmount: null },
-      { id: uid(), name: '病院', defaultAmount: null },
-      { id: uid(), name: '整体', defaultAmount: null },
-      { id: uid(), name: '交通費', defaultAmount: null, repeatable: true }
+      { id: uid(), name: '美容院', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: '美容代', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: '病院', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: '整体', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+      { id: uid(), name: '交通費', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] }
     ]},
     { id: uid(), name: 'Suica', defaultAmount: null },
     { id: uid(), name: '分割払い残高', defaultAmount: null, noChildAdd: true, children: [
@@ -436,6 +435,121 @@ function sanitizeCycleItem(raw) {
 }
 
 let data = loadData();
+
+// One-time structural migration: some named items used to be simple
+// single-entry leaves (通信費, and any custom item like a user-created
+// "ART") or held their history as flat, repeated same-name siblings
+// (REI/TOMOの交通費, サブスクの各項目). They now behave like 食費: keep
+// their name, but fold into their own auto-growing entry log. These run
+// on every load (template once, each cycle lazily via ensureCycle) and
+// are no-ops once already migrated, so it applies without a data reset.
+const LEAF_TO_AUTO_ENTRIES_NAMES = ['通信費', 'ART'];
+const GROUPED_TO_AUTO_ENTRIES_PARENTS = ['REI', 'TOMO', 'サブスク'];
+
+function migrateTemplateLeafToGroup(item) {
+  if (item.autoEntries && Array.isArray(item.children)) return;
+  item.children = Array.isArray(item.children) ? item.children : [];
+  item.defaultAmount = null;
+  item.noChildAdd = true;
+  item.autoEntries = true;
+}
+
+function migrateTemplateChildToGroup(parentChildren, childName) {
+  const matches = parentChildren.filter(c => c.name === childName);
+  if (matches.length === 0) return;
+  if (matches.length === 1 && matches[0].autoEntries && Array.isArray(matches[0].children)) return;
+  for (let i = parentChildren.length - 1; i >= 0; i--) {
+    if (parentChildren[i].name === childName) parentChildren.splice(i, 1);
+  }
+  parentChildren.push({
+    id: matches[0].id, name: childName, defaultAmount: null,
+    noChildAdd: true, autoEntries: true, children: []
+  });
+}
+
+function migrateTemplateStructures(items) {
+  items.forEach(item => {
+    if (LEAF_TO_AUTO_ENTRIES_NAMES.includes(item.name)) {
+      migrateTemplateLeafToGroup(item);
+    } else if (GROUPED_TO_AUTO_ENTRIES_PARENTS.includes(item.name) && Array.isArray(item.children)) {
+      // Only merge same-named siblings that were explicitly repeatable
+      // (e.g. 交通費) — two children that merely happen to share a name
+      // otherwise (e.g. two distinct "AppleCare" subscriptions) must stay
+      // separate, each becoming its own independent auto-growing log.
+      const repeatableNames = [];
+      item.children.forEach(c => {
+        if (c.repeatable && !repeatableNames.includes(c.name)) repeatableNames.push(c.name);
+      });
+      repeatableNames.forEach(name => migrateTemplateChildToGroup(item.children, name));
+      item.children.forEach(child => {
+        if (!(child.autoEntries && Array.isArray(child.children))) migrateTemplateLeafToGroup(child);
+      });
+    }
+  });
+}
+
+function migrateCycleLeafToGroup(item) {
+  if (item.autoEntries && Array.isArray(item.children)) return;
+  const hasOwnValue = typeof item.amount === 'number' || item.date || item.place;
+  const existingChildren = Array.isArray(item.children) ? item.children : [];
+  const newChildren = [];
+  if (hasOwnValue) {
+    newChildren.push({ id: uid(), name: '', amount: item.amount, payment: item.payment || 'none', date: item.date || null, place: item.place || '' });
+  }
+  newChildren.push(...existingChildren);
+  item.children = newChildren;
+  item.amount = null;
+  item.date = null;
+  item.place = '';
+  item.payment = 'none';
+  item.noChildAdd = true;
+  item.autoEntries = true;
+}
+
+function migrateCycleChildToGroup(parentChildren, childName) {
+  const matches = parentChildren.filter(c => c.name === childName);
+  if (matches.length === 0) return;
+  if (matches.length === 1 && matches[0].autoEntries && Array.isArray(matches[0].children)) return;
+  for (let i = parentChildren.length - 1; i >= 0; i--) {
+    if (parentChildren[i].name === childName) parentChildren.splice(i, 1);
+  }
+  const groupItem = {
+    id: matches[0].id, name: childName, amount: null, payment: 'none', date: null, place: '',
+    noChildAdd: true, autoEntries: true, children: []
+  };
+  matches.forEach(m => {
+    if (Array.isArray(m.children)) {
+      groupItem.children.push(...m.children);
+    } else if (typeof m.amount === 'number' || m.date || m.place) {
+      groupItem.children.push({ id: uid(), name: '', amount: m.amount, payment: m.payment || 'none', date: m.date || null, place: m.place || '' });
+    }
+  });
+  parentChildren.push(groupItem);
+}
+
+function migrateCycleStructures(items) {
+  items.forEach(item => {
+    if (LEAF_TO_AUTO_ENTRIES_NAMES.includes(item.name)) {
+      migrateCycleLeafToGroup(item);
+    } else if (GROUPED_TO_AUTO_ENTRIES_PARENTS.includes(item.name) && Array.isArray(item.children)) {
+      // Only merge same-named siblings that were explicitly repeatable
+      // (e.g. 交通費) — two children that merely happen to share a name
+      // otherwise (e.g. two distinct "AppleCare" subscriptions) must stay
+      // separate, each becoming its own independent auto-growing log.
+      const repeatableNames = [];
+      item.children.forEach(c => {
+        if (c.repeatable && !repeatableNames.includes(c.name)) repeatableNames.push(c.name);
+      });
+      repeatableNames.forEach(name => migrateCycleChildToGroup(item.children, name));
+      item.children.forEach(child => {
+        if (!(child.autoEntries && Array.isArray(child.children))) migrateCycleLeafToGroup(child);
+      });
+    }
+  });
+}
+
+migrateTemplateStructures(data.template);
+saveData();
 
 function loadData() {
   try {
@@ -559,6 +673,12 @@ function ensureCycle(key) {
     };
     saveData();
   } else {
+    // Must run before syncStructuralFlags: migration needs to see each
+    // item's pre-sync shape to tell a not-yet-migrated leaf/flat-sibling
+    // item apart from an already-migrated group (syncStructuralFlags would
+    // otherwise stamp autoEntries/children onto it first, from the
+    // already-migrated template, making it look pre-migrated and skipped).
+    migrateCycleStructures(data.cycles[key].items);
     syncStructuralFlags(data.cycles[key].items, data.template);
   }
   return data.cycles[key];
@@ -640,9 +760,11 @@ document.getElementById('add-top-item-btn').addEventListener('click', () => {
   if (!name || !name.trim()) return;
   const trimmed = name.trim();
   const newId = uid();
-  data.template.push({ id: newId, name: trimmed, defaultAmount: null });
+  // New top-level items default to the 食費-style auto-growing log format:
+  // an unnamed date/place/amount entry with a blank slot always ready.
+  data.template.push({ id: newId, name: trimmed, defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] });
   const cycle = ensureCycle(currentCycle);
-  cycle.items.push({ id: newId, name: trimmed, amount: null, payment: 'none', date: null, place: '' });
+  cycle.items.push({ id: newId, name: trimmed, amount: null, payment: 'none', date: null, place: '', noChildAdd: true, autoEntries: true, children: [] });
   saveData();
   renderSheet();
   showToast('項目を追加しました');
@@ -705,82 +827,88 @@ function renderItemList() {
   list.innerHTML = '';
 
   cycle.items.forEach(item => {
-    if (item.autoEntries) ensureAutoEntrySlot(item);
-    else if (Array.isArray(item.children)) ensureRepeatableSlots(item);
-
     const group = document.createElement('div');
     group.className = 'item-group';
     group.appendChild(buildItemRow(item, 0, cycle.items));
-
-    const isGroup = Array.isArray(item.children);
-    const hasChildren = isGroup && item.children.length > 0;
-    const collapsed = hasChildren && !!data.collapsedGroups[item.name];
-
-    if (item.autoEntries && hasChildren) {
-      // The last child is always the guaranteed-blank quick-add slot — keep
-      // it visible outside the fold so a new entry can be filled in right
-      // away without expanding the group. Only the filled history collapses.
-      const blankSlot = item.children[item.children.length - 1];
-      const filledEntries = item.children.slice(0, -1);
-      group.appendChild(buildItemRow(blankSlot, 1, item.children, true));
-      if (filledEntries.length > 0 && !collapsed) {
-        filledEntries.forEach(child => {
-          group.appendChild(buildItemRow(child, 1, item.children, true));
-        });
-      }
-    } else if (hasChildren && !collapsed) {
-      item.children.forEach(child => {
-        group.appendChild(buildItemRow(child, 1, item.children, !!item.autoEntries));
-      });
-    }
-
-    if (isGroup) {
-      const subtotal = document.createElement('div');
-      subtotal.className = 'group-subtotal';
-      subtotal.textContent = '小計 ' + formatCurrency(groupTotal(item));
-      group.appendChild(subtotal);
-    }
-
-    if (!collapsed && !item.noChildAdd) {
-      const addChildRow = document.createElement('div');
-      addChildRow.className = 'add-child-row';
-      const addChildBtn = document.createElement('button');
-      addChildBtn.type = 'button';
-      addChildBtn.className = 'add-row-btn';
-      addChildBtn.textContent = '＋';
-      addChildBtn.title = '小項目を追加';
-      addChildBtn.addEventListener('click', () => {
-        const name = prompt('新しい小項目名を入力してください');
-        if (!name || !name.trim()) return;
-        const trimmed = name.trim();
-        const newChildId = uid();
-        if (!Array.isArray(item.children)) item.children = [];
-        item.children.push({ id: newChildId, name: trimmed, amount: null, payment: 'none', date: null, place: '' });
-
-        const tmplItem = data.template.find(t => t.id === item.id);
-        if (tmplItem) {
-          if (!Array.isArray(tmplItem.children)) tmplItem.children = [];
-          tmplItem.children.push({ id: newChildId, name: trimmed, defaultAmount: null });
-        }
-        saveData();
-        renderSheet();
-      });
-      addChildRow.appendChild(addChildBtn);
-      group.appendChild(addChildRow);
-    }
-
+    renderGroupBody(group, item, 0);
     list.appendChild(group);
   });
 }
 
+// Recursively renders a group's children, subtotal, and add-child
+// affordance. Works at any depth so a named sub-item (定期, 小遣い,
+// YouTubeファミリー, ...) can itself be a group that folds into its own
+// auto-growing entry log, the same way a top-level 食費-style category does.
+function renderGroupBody(container, item, depth) {
+  if (!Array.isArray(item.children)) return;
+
+  if (item.autoEntries) ensureAutoEntrySlot(item);
+  else ensureRepeatableSlots(item);
+
+  const hasChildren = item.children.length > 0;
+  const collapsed = hasChildren && !!data.collapsedGroups[item.id];
+
+  if (item.autoEntries && hasChildren) {
+    // The last child is always the guaranteed-blank quick-add slot — keep
+    // it visible outside the fold so a new entry can be filled in right
+    // away without expanding the group. Only the filled history collapses.
+    const blankSlot = item.children[item.children.length - 1];
+    const filledEntries = item.children.slice(0, -1);
+    container.appendChild(buildItemRow(blankSlot, depth + 1, item.children, true));
+    if (filledEntries.length > 0 && !collapsed) {
+      filledEntries.forEach(child => {
+        container.appendChild(buildItemRow(child, depth + 1, item.children, true));
+      });
+    }
+  } else if (hasChildren && !collapsed) {
+    item.children.forEach(child => {
+      container.appendChild(buildItemRow(child, depth + 1, item.children, !!item.autoEntries));
+      renderGroupBody(container, child, depth + 1);
+    });
+  }
+
+  const subtotal = document.createElement('div');
+  subtotal.className = 'group-subtotal';
+  subtotal.textContent = '小計 ' + formatCurrency(groupTotal(item));
+  container.appendChild(subtotal);
+
+  if (!collapsed && !item.noChildAdd) {
+    const addChildRow = document.createElement('div');
+    addChildRow.className = 'add-child-row';
+    const addChildBtn = document.createElement('button');
+    addChildBtn.type = 'button';
+    addChildBtn.className = 'add-row-btn';
+    addChildBtn.textContent = '＋';
+    addChildBtn.title = '小項目を追加';
+    addChildBtn.addEventListener('click', () => {
+      const name = prompt('新しい小項目名を入力してください');
+      if (!name || !name.trim()) return;
+      const trimmed = name.trim();
+      const newChildId = uid();
+      if (!Array.isArray(item.children)) item.children = [];
+      item.children.push({ id: newChildId, name: trimmed, amount: null, payment: 'none', date: null, place: '' });
+
+      const tmplItem = data.template.find(t => t.id === item.id);
+      if (tmplItem) {
+        if (!Array.isArray(tmplItem.children)) tmplItem.children = [];
+        tmplItem.children.push({ id: newChildId, name: trimmed, defaultAmount: null });
+      }
+      saveData();
+      renderSheet();
+    });
+    addChildRow.appendChild(addChildBtn);
+    container.appendChild(addChildRow);
+  }
+}
+
 function buildItemRow(row, depth, siblingArray, forceBlankName) {
   const el = document.createElement('div');
-  const isGroupHeader = depth === 0 && Array.isArray(row.children);
+  const isGroupHeader = Array.isArray(row.children);
   el.className = 'item-row' + (depth > 0 ? ' depth-1' : '') + (isGroupHeader ? ' group-header' : '');
 
   const nameEl = document.createElement('span');
   nameEl.className = 'item-name';
-  const collapsed = isGroupHeader && !!data.collapsedGroups[row.name];
+  const collapsed = isGroupHeader && !!data.collapsedGroups[row.id];
   nameEl.textContent = (isGroupHeader ? (collapsed ? '▸ ' : '▾ ') : '') + row.name;
   if (depth > 0 && forceBlankName) {
     // Auto-entry log rows never show a name — always collapse to a hard
@@ -799,7 +927,7 @@ function buildItemRow(row, depth, siblingArray, forceBlankName) {
       if (clickTimer) return;
       clickTimer = setTimeout(() => {
         clickTimer = null;
-        data.collapsedGroups[row.name] = !collapsed;
+        data.collapsedGroups[row.id] = !collapsed;
         saveData();
         renderSheet();
       }, 250);
