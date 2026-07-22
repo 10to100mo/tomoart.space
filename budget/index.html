@@ -168,19 +168,20 @@
     .item-row-wrap { position: relative; overflow: hidden; }
     .swipe-delete-btn, .swipe-reset-btn, .swipe-reorder-btn {
       position: absolute; top: 50%; transform: translateY(-50%);
-      width: 44px; height: 76%; max-height: 44px; border-radius: 12px;
-      color: #fff; border: none;
+      width: 44px; height: 76%; max-height: 44px; min-height: 28px; border-radius: 12px;
+      color: #fff; border: none; box-sizing: border-box; overflow: hidden;
       display: flex; align-items: center; justify-content: center;
     }
     .swipe-delete-btn svg, .swipe-reset-btn svg { width: 22px; height: 22px; }
     .swipe-delete-btn { right: 14px; background: #f96058; }
     .swipe-reset-btn { right: 68px; background: #e2a03f; }
     .swipe-reorder-btn {
-      right: 122px; background: #3a3a3a; flex-direction: column; padding: 4px;
+      right: 122px; background: #3a3a3a; flex-direction: column; padding: 2px 0;
     }
     .swipe-reorder-btn button {
-      flex: 1; width: 100%; background: none; border: none; color: #fff;
-      font-size: 13px; line-height: 1; display: flex; align-items: center; justify-content: center;
+      flex: 1 1 0; min-height: 0; width: 100%; background: none; border: none; color: #fff;
+      font-size: 10px; line-height: 1; display: flex; align-items: center; justify-content: center;
+      box-sizing: border-box;
     }
     .swipe-reorder-btn button:disabled { color: #777; }
     .item-row {
