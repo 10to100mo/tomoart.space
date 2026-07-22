@@ -126,14 +126,14 @@
       flex: 1 1 auto; border: none; border-bottom: none; background: transparent;
       color: #fff; font-size: 17px; font-family: inherit; outline: none; min-width: 0;
     }
-    .entry-fields { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+    .entry-fields { display: flex; align-items: center; gap: 8px; flex: 1 1 auto; min-width: 0; }
     .item-date {
       flex: 0 0 44px; width: 44px; font-size: 13px; color: #999; letter-spacing: 0.02em;
       text-align: right; white-space: nowrap; overflow: hidden; cursor: pointer;
     }
     .item-date.empty { color: #444; }
     .item-place {
-      flex: 0 0 70px; width: 70px; font-size: 13px; color: #999; letter-spacing: 0.02em;
+      flex: 1 1 0; min-width: 0; font-size: 13px; color: #999; letter-spacing: 0.02em;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer;
     }
     .item-place.empty { color: #444; }
@@ -249,7 +249,6 @@
       .amount-chip { min-width: 74px; width: 80px; font-size: 16px; }
       .item-name { font-size: 16px; }
       .item-date { flex-basis: 34px; width: 34px; }
-      .item-place { flex-basis: 46px; width: 46px; }
       .edit-form .edit-date { width: 56px; }
       .edit-form .edit-place { width: 70px; }
       .edit-form .edit-amount { width: 70px; }
