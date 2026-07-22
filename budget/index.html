@@ -368,7 +368,11 @@ function defaultTemplate() {
     { id: uid(), name: '讓一振込', defaultAmount: 150000, noChildAdd: true },
     { id: uid(), name: '食費', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
     { id: uid(), name: '雑費', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
-    { id: uid(), name: '水道光熱費', defaultAmount: null },
+    { id: uid(), name: '水道光熱費', defaultAmount: null, children: [
+      { id: uid(), name: '水道代', defaultAmount: null },
+      { id: uid(), name: 'ガス代', defaultAmount: null },
+      { id: uid(), name: '電気代', defaultAmount: null }
+    ]},
     { id: uid(), name: '通信費', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
     { id: uid(), name: 'サブスク', defaultAmount: null, children: [
       { id: uid(), name: 'YouTubeファミリー', defaultAmount: 2280 },
@@ -570,6 +574,25 @@ function revertCycleStructures(items) {
   });
 }
 
+// 水道光熱費 used to be a single leaf amount — split into named sub-items
+// (水道代/ガス代/電気代, mirrored from the template). Any value already
+// entered directly on 水道光熱費 is kept as a "その他" entry so it isn't
+// silently lost.
+function migrateCycleWaterUtility(items, template) {
+  const item = items.find(i => i.name === '水道光熱費');
+  const tmpl = template.find(t => t.name === '水道光熱費');
+  if (!item || !tmpl || !Array.isArray(tmpl.children) || Array.isArray(item.children)) return;
+  const hasOwnValue = typeof item.amount === 'number' || item.date || item.place;
+  item.children = tmpl.children.map(t => ({ id: t.id, name: t.name, amount: null, payment: 'none', date: null, place: '' }));
+  if (hasOwnValue) {
+    item.children.push({ id: uid(), name: 'その他', amount: item.amount, payment: item.payment || 'none', date: item.date || null, place: item.place || '' });
+  }
+  item.amount = null;
+  item.date = null;
+  item.place = '';
+  item.payment = 'none';
+}
+
 function migrateCycleStructures(items) {
   items.forEach(item => {
     if (LEAF_TO_AUTO_ENTRIES_NAMES.includes(item.name)) {
@@ -596,6 +619,17 @@ revertTemplateStructures(data.template);
 // サブスク used to block adding new named subscriptions — now allowed.
 const subscriptionTemplate = data.template.find(t => t.name === 'サブスク');
 if (subscriptionTemplate) subscriptionTemplate.noChildAdd = false;
+// 水道光熱費 used to be a single amount — split into named sub-items
+// (水道代/ガス代/電気代), same style as サブスク.
+const waterUtilityTemplate = data.template.find(t => t.name === '水道光熱費');
+if (waterUtilityTemplate && !Array.isArray(waterUtilityTemplate.children)) {
+  waterUtilityTemplate.children = [
+    { id: uid(), name: '水道代', defaultAmount: null },
+    { id: uid(), name: 'ガス代', defaultAmount: null },
+    { id: uid(), name: '電気代', defaultAmount: null }
+  ];
+  waterUtilityTemplate.defaultAmount = null;
+}
 saveData();
 
 function loadData() {
@@ -727,6 +761,7 @@ function ensureCycle(key) {
     // already-migrated template, making it look pre-migrated and skipped).
     migrateCycleStructures(data.cycles[key].items);
     revertCycleStructures(data.cycles[key].items);
+    migrateCycleWaterUtility(data.cycles[key].items, data.template);
     syncStructuralFlags(data.cycles[key].items, data.template);
     saveData();
   }
