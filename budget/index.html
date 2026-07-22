@@ -101,6 +101,7 @@
     .card-value.card { color: #00ff7f; }
     .card-value.balance.positive { color: #fff; }
     .card-value.balance.negative { color: #fff; }
+    .card-value.total { color: #fff; }
 
     /* ── ITEM ROWS ── */
     .item-group { margin-bottom: 0; border-bottom: 1px solid #262626; }
@@ -211,13 +212,6 @@
 
     .add-top-row { margin-top: 10px; }
 
-    .grand-total-row {
-      display: flex; justify-content: space-between; align-items: baseline;
-      padding: 10px 0; margin-top: 6px; border-top: 1px solid #fff;
-      font-size: 18px;
-    }
-    .grand-total-row .value { font-variant-numeric: tabular-nums; font-size: 22px; }
-
     .legend {
       display: flex; gap: 20px; font-size: 13px; color: #777; margin: 12px 0 6px; flex-wrap: wrap;
     }
@@ -299,6 +293,16 @@
         <div class="card-label">カード 合計</div>
         <div class="card-value card" id="sum-card">¥0</div>
       </div>
+    </div>
+
+    <div class="cards-row">
+      <div class="card">
+        <div class="card-label">支出 合計</div>
+        <div class="card-value total" id="grand-total">¥0</div>
+      </div>
+    </div>
+
+    <div class="cards-row">
       <div class="card">
         <div class="card-label">残り</div>
         <div class="card-value balance" id="sum-balance">¥0</div>
@@ -315,11 +319,6 @@
 
     <div class="add-top-row">
       <button type="button" class="add-row-btn" id="add-top-item-btn">＋ 項目を追加</button>
-    </div>
-
-    <div class="grand-total-row">
-      <span>支出 合計</span>
-      <span class="value" id="grand-total">¥0</span>
     </div>
   </section>
 
