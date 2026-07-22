@@ -87,7 +87,7 @@
     }
     .budget-total-row label { color: #999; font-size: 12px; letter-spacing: 0.15em; }
     .budget-total-input {
-      border: none; border-bottom: 1px solid rgba(255,255,255,0.4); background: transparent;
+      border: none; border-bottom: 1px solid rgba(255,255,255,0.15); background: transparent;
       color: #fff; font-size: 18px; padding: 4px 2px; width: 150px; text-align: right; outline: none;
       font-variant-numeric: tabular-nums;
     }
@@ -121,7 +121,7 @@
     }
     .item-row.depth-1 .item-name { font-size: 13px; color: #aaa; }
     .item-name-input {
-      flex: 1 1 auto; border: none; border-bottom: 1px solid rgba(255,255,255,0.4); background: transparent;
+      flex: 1 1 auto; border: none; border-bottom: 1px solid rgba(255,255,255,0.15); background: transparent;
       color: #fff; font-size: 14px; font-family: inherit; outline: none; min-width: 0;
     }
     .entry-fields { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
@@ -148,7 +148,7 @@
 
     .edit-form { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .edit-form input {
-      border: none; border-bottom: 1px solid rgba(255,255,255,0.4); background: transparent;
+      border: none; border-bottom: 1px solid rgba(255,255,255,0.15); background: transparent;
       color: #fff; font-size: 12px; padding: 2px; outline: none; font-family: inherit;
     }
     .edit-form .edit-date { width: 64px; }
@@ -205,7 +205,7 @@
     .sub-heading { font-size: 12px; letter-spacing: 0.2em; color: #aaa; margin-bottom: 16px; }
     .field-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
     .field-row label { font-size: 12px; color: #777; flex: 0 0 140px; }
-    .field-row input { border: none; border-bottom: 1px solid rgba(255,255,255,0.4); background: transparent; color: #fff; padding: 6px 2px; font-size: 14px; outline: none; width: 140px; text-align: right; }
+    .field-row input { border: none; border-bottom: 1px solid rgba(255,255,255,0.15); background: transparent; color: #fff; padding: 6px 2px; font-size: 14px; outline: none; width: 140px; text-align: right; }
     .ghost-btn {
       background: none; border: 1px solid #3a3a3a; padding: 10px 20px; font-size: 12px;
       letter-spacing: 0.15em; color: #999; transition: all 0.15s;
@@ -345,7 +345,7 @@ function defaultTemplate() {
     { id: uid(), name: '雑費', defaultAmount: null, noChildAdd: true },
     { id: uid(), name: '水道光熱費', defaultAmount: null, noChildAdd: true },
     { id: uid(), name: '通信費', defaultAmount: null, noChildAdd: true },
-    { id: uid(), name: 'サブスク', defaultAmount: null, children: [
+    { id: uid(), name: 'サブスク', defaultAmount: null, noChildAdd: true, children: [
       { id: uid(), name: 'YouTubeファミリー', defaultAmount: 2280 },
       { id: uid(), name: 'Netflix', defaultAmount: 2290 },
       { id: uid(), name: 'Amazonプライム', defaultAmount: null },
@@ -356,14 +356,14 @@ function defaultTemplate() {
       { id: uid(), name: 'Apple iCloud', defaultAmount: 1500 },
       { id: uid(), name: 'Claude', defaultAmount: 3000 }
     ]},
-    { id: uid(), name: 'REI', defaultAmount: null, children: [
+    { id: uid(), name: 'REI', defaultAmount: null, noChildAdd: true, children: [
       { id: uid(), name: '定期', defaultAmount: 20000 },
       { id: uid(), name: '小遣い', defaultAmount: null },
       { id: uid(), name: '美容院', defaultAmount: null },
       { id: uid(), name: '病院', defaultAmount: null },
       { id: uid(), name: '交通費', defaultAmount: null }
     ]},
-    { id: uid(), name: 'TOMO', defaultAmount: null, children: [
+    { id: uid(), name: 'TOMO', defaultAmount: null, noChildAdd: true, children: [
       { id: uid(), name: '美容院', defaultAmount: null },
       { id: uid(), name: '美容代', defaultAmount: null },
       { id: uid(), name: '病院', defaultAmount: null },
@@ -371,7 +371,7 @@ function defaultTemplate() {
       { id: uid(), name: '交通費', defaultAmount: null }
     ]},
     { id: uid(), name: 'Suica', defaultAmount: null },
-    { id: uid(), name: '分割払い残高', defaultAmount: null, children: [
+    { id: uid(), name: '分割払い残高', defaultAmount: null, noChildAdd: true, children: [
       { id: uid(), name: 'MI Card', defaultAmount: null },
       { id: uid(), name: 'JCB', defaultAmount: null }
     ]},
