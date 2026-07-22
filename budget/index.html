@@ -575,17 +575,26 @@ function walkRows(items, fn, parent) {
 function sumBy(items, predicate) {
   let total = 0;
   walkRows(items, row => {
+    // Group headers never expose their own amount field in the UI, so a
+    // stale value left over from before an item became a group must not
+    // count — only leaf entries carry real amounts.
+    if (Array.isArray(row.children)) return;
     if (typeof row.amount === 'number' && predicate(row)) total += row.amount;
   });
   return total;
 }
 
 function groupTotal(row) {
-  let total = (typeof row.amount === 'number') ? row.amount : 0;
+  // Group headers never expose their own amount field in the UI — only
+  // children carry real amounts — so a group's total is always just the
+  // sum of its children, even if a stale amount lingers on the header
+  // from before it became a group.
   if (Array.isArray(row.children)) {
+    let total = 0;
     row.children.forEach(c => { total += groupTotal(c); });
+    return total;
   }
-  return total;
+  return (typeof row.amount === 'number') ? row.amount : 0;
 }
 
 /* ── CLOSE OPEN SWIPE ROWS ON OUTSIDE TAP ── */
