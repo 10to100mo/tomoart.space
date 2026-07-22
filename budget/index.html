@@ -387,14 +387,14 @@ function defaultTemplate() {
       { id: uid(), name: 'Apple iCloud', defaultAmount: 1500 },
       { id: uid(), name: 'Claude', defaultAmount: 3000 }
     ]},
-    { id: uid(), name: 'REI', defaultAmount: null, noChildAdd: true, children: [
+    { id: uid(), name: 'REI', defaultAmount: null, children: [
       { id: uid(), name: '定期', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
       { id: uid(), name: '小遣い', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
       { id: uid(), name: '美容院', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
       { id: uid(), name: '病院', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
       { id: uid(), name: '交通費', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] }
     ]},
-    { id: uid(), name: 'TOMO', defaultAmount: null, noChildAdd: true, children: [
+    { id: uid(), name: 'TOMO', defaultAmount: null, children: [
       { id: uid(), name: '美容院', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
       { id: uid(), name: '美容代', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
       { id: uid(), name: '病院', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
@@ -653,6 +653,11 @@ revertTemplateStructures(data.template);
 // サブスク used to block adding new named subscriptions — now allowed.
 const subscriptionTemplate = data.template.find(t => t.name === 'サブスク');
 if (subscriptionTemplate) subscriptionTemplate.noChildAdd = false;
+// REI/TOMO used to block adding new named sub-items — now allowed.
+['REI', 'TOMO'].forEach(name => {
+  const t = data.template.find(x => x.name === name);
+  if (t) t.noChildAdd = false;
+});
 // 水道光熱費 used to be a single amount — split into named sub-items
 // (水道代/ガス代/電気代), same style as サブスク.
 const waterUtilityTemplate = data.template.find(t => t.name === '水道光熱費');
@@ -1020,12 +1025,21 @@ function renderGroupBody(container, item, depth) {
       const trimmed = name.trim();
       const newChildId = uid();
       if (!Array.isArray(item.children)) item.children = [];
-      item.children.push({ id: newChildId, name: trimmed, amount: null, payment: 'none', date: null, place: '' });
+      // Match the auto-growing style of existing siblings (e.g. REI/TOMOの
+      // 定期・小遣い) so a newly added category behaves consistently with
+      // the ones already there, instead of always defaulting to a plain
+      // single-amount leaf.
+      const matchesAutoEntries = item.children.some(c => c.autoEntries);
+      item.children.push(matchesAutoEntries
+        ? { id: newChildId, name: trimmed, amount: null, payment: 'none', date: null, place: '', noChildAdd: true, autoEntries: true, children: [] }
+        : { id: newChildId, name: trimmed, amount: null, payment: 'none', date: null, place: '' });
 
       const tmplItem = data.template.find(t => t.id === item.id);
       if (tmplItem) {
         if (!Array.isArray(tmplItem.children)) tmplItem.children = [];
-        tmplItem.children.push({ id: newChildId, name: trimmed, defaultAmount: null });
+        tmplItem.children.push(matchesAutoEntries
+          ? { id: newChildId, name: trimmed, defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] }
+          : { id: newChildId, name: trimmed, defaultAmount: null });
       }
       saveData();
       renderSheet();
