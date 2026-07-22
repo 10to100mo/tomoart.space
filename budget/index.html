@@ -787,41 +787,45 @@ function buildItemRow(row, depth, siblingArray, forceBlankName) {
   }
   el.appendChild(nameEl);
 
-  const entryFields = document.createElement('div');
-  entryFields.className = 'entry-fields';
+  // Group headers never carry their own amount (it always lives on a real
+  // child now), so skip the unused date/place/amount row entirely for them.
+  if (!isGroupHeader) {
+    const entryFields = document.createElement('div');
+    entryFields.className = 'entry-fields';
 
-  const dateEl = document.createElement('span');
-  dateEl.className = 'item-date' + (row.date ? '' : ' empty');
-  dateEl.textContent = row.date ? formatDateShort(row.date) : '–';
+    const dateEl = document.createElement('span');
+    dateEl.className = 'item-date' + (row.date ? '' : ' empty');
+    dateEl.textContent = row.date ? formatDateShort(row.date) : '–';
 
-  const placeEl = document.createElement('span');
-  placeEl.className = 'item-place' + (row.place ? '' : ' empty');
-  placeEl.textContent = row.place || '–';
+    const placeEl = document.createElement('span');
+    placeEl.className = 'item-place' + (row.place ? '' : ' empty');
+    placeEl.textContent = row.place || '–';
 
-  const amountBtn = document.createElement('button');
-  amountBtn.type = 'button';
-  amountBtn.className = 'amount-chip ' + row.payment + (row.amount === null ? ' empty' : '');
-  amountBtn.textContent = row.amount === null ? '–' : formatCurrency(row.amount);
-  amountBtn.title = 'クリックで 未選択→現金→カード を切り替え';
-  amountBtn.addEventListener('click', () => {
-    const order = ['none', 'cash', 'card'];
-    row.payment = order[(order.indexOf(row.payment) + 1) % order.length];
-    saveData();
-    renderSheet();
-  });
-  amountBtn.addEventListener('dblclick', () => startEditEntry(entryFields, row));
+    const amountBtn = document.createElement('button');
+    amountBtn.type = 'button';
+    amountBtn.className = 'amount-chip ' + row.payment + (row.amount === null ? ' empty' : '');
+    amountBtn.textContent = row.amount === null ? '–' : formatCurrency(row.amount);
+    amountBtn.title = 'クリックで 未選択→現金→カード を切り替え';
+    amountBtn.addEventListener('click', () => {
+      const order = ['none', 'cash', 'card'];
+      row.payment = order[(order.indexOf(row.payment) + 1) % order.length];
+      saveData();
+      renderSheet();
+    });
+    amountBtn.addEventListener('dblclick', () => startEditEntry(entryFields, row));
 
-  entryFields.append(dateEl, placeEl, amountBtn);
-  el.appendChild(entryFields);
+    entryFields.append(dateEl, placeEl, amountBtn);
+    el.appendChild(entryFields);
 
-  const editBtn = document.createElement('button');
-  editBtn.type = 'button';
-  editBtn.className = 'row-btn';
-  editBtn.textContent = '✎';
-  editBtn.style.color = '#bbb';
-  editBtn.title = '日付・場所・金額を編集';
-  editBtn.addEventListener('click', () => startEditEntry(entryFields, row));
-  el.appendChild(editBtn);
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.className = 'row-btn';
+    editBtn.textContent = '✎';
+    editBtn.style.color = '#bbb';
+    editBtn.title = '日付・場所・金額を編集';
+    editBtn.addEventListener('click', () => startEditEntry(entryFields, row));
+    el.appendChild(editBtn);
+  }
 
   const doDelete = () => {
     if (!confirm(`「${row.name}」を削除しますか?`)) return;
