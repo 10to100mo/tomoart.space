@@ -164,15 +164,17 @@
     }
     .row-btn:hover { color: #f87171; }
 
-    /* ── SWIPE TO DELETE ── */
+    /* ── SWIPE TO DELETE / RESET ── */
     .item-row-wrap { position: relative; overflow: hidden; }
-    .swipe-delete-btn {
-      position: absolute; top: 50%; right: 14px; transform: translateY(-50%);
+    .swipe-delete-btn, .swipe-reset-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
       width: 44px; height: 76%; max-height: 44px; border-radius: 12px;
-      background: #f96058; color: #fff; border: none;
+      color: #fff; border: none;
       display: flex; align-items: center; justify-content: center;
     }
-    .swipe-delete-btn svg { width: 22px; height: 22px; }
+    .swipe-delete-btn svg, .swipe-reset-btn svg { width: 22px; height: 22px; }
+    .swipe-delete-btn { right: 14px; background: #f96058; }
+    .swipe-reset-btn { right: 68px; background: #e2a03f; }
     .item-row {
       background: #111; position: relative; z-index: 1; touch-action: pan-y;
       user-select: none; -webkit-user-select: none;
@@ -835,6 +837,21 @@ function buildItemRow(row, depth, siblingArray, forceBlankName) {
     showToast('削除しました');
   };
 
+  const doReset = () => {
+    if (row.amount === null && !row.date && !row.place && row.payment === 'none') {
+      showToast('リセットする内容がありません');
+      return;
+    }
+    if (!confirm(`「${row.name || 'この項目'}」の記入内容をリセットしますか?`)) return;
+    row.amount = null;
+    row.date = null;
+    row.place = '';
+    row.payment = 'none';
+    saveData();
+    renderSheet();
+    showToast('リセットしました');
+  };
+
   const reorderGroup = document.createElement('div');
   reorderGroup.className = 'reorder-group';
   const rowIdx = siblingArray.findIndex(r => r.id === row.id);
@@ -861,6 +878,13 @@ function buildItemRow(row, depth, siblingArray, forceBlankName) {
   const wrap = document.createElement('div');
   wrap.className = 'item-row-wrap';
 
+  const swipeResetBtn = document.createElement('button');
+  swipeResetBtn.type = 'button';
+  swipeResetBtn.className = 'swipe-reset-btn';
+  swipeResetBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>';
+  swipeResetBtn.title = 'リセット';
+  swipeResetBtn.addEventListener('click', doReset);
+
   const swipeDeleteBtn = document.createElement('button');
   swipeDeleteBtn.type = 'button';
   swipeDeleteBtn.className = 'swipe-delete-btn';
@@ -868,13 +892,13 @@ function buildItemRow(row, depth, siblingArray, forceBlankName) {
   swipeDeleteBtn.title = '削除';
   swipeDeleteBtn.addEventListener('click', doDelete);
 
-  wrap.append(swipeDeleteBtn, el);
+  wrap.append(swipeResetBtn, swipeDeleteBtn, el);
   attachSwipeToDelete(el);
 
   return wrap;
 }
 
-const SWIPE_REVEAL = 72;
+const SWIPE_REVEAL = 128;
 
 function closeOpenSwipeRows(except) {
   document.querySelectorAll('.item-row.swipe-open').forEach(r => {
