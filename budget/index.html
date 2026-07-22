@@ -168,7 +168,7 @@
     .item-row-wrap { position: relative; overflow: hidden; }
     .swipe-delete-btn {
       position: absolute; top: 50%; right: 14px; transform: translateY(-50%);
-      width: 44px; height: 44px; border-radius: 12px;
+      width: 44px; height: 76%; max-height: 44px; border-radius: 12px;
       background: #f96058; color: #fff; border: none;
       display: flex; align-items: center; justify-content: center;
     }
@@ -722,6 +722,14 @@ function buildItemRow(row, depth, siblingArray) {
   nameEl.className = 'item-name';
   const collapsed = isGroupHeader && !!data.collapsedGroups[row.name];
   nameEl.textContent = (isGroupHeader ? (collapsed ? '▸ ' : '▾ ') : '') + row.name;
+  if (depth > 0 && !row.name.trim()) {
+    // A blank child name would still claim flexible width based on any
+    // stray whitespace, throwing off alignment between rows — collapse it
+    // to a hard zero so date/place/amount always start at the same spot.
+    nameEl.style.flex = '0 0 0';
+    nameEl.style.width = '0';
+    nameEl.style.overflow = 'hidden';
+  }
 
   if (isGroupHeader) {
     nameEl.title = 'クリックで折りたたみ / ダブルクリックで名前を編集';
