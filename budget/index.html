@@ -510,10 +510,16 @@ function cloneTemplateToCycleItems(template) {
   });
 }
 
-function formatDateShort(iso) {
-  const parts = iso.split('-');
-  if (parts.length !== 3) return iso;
-  return `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`;
+function formatDateShort(value) {
+  // Zero-pad plain "M/D" input (7/1 -> 07/01) so every date renders as the
+  // same 5 characters and lines up column-wise regardless of the actual
+  // day/month digit count. Falls back to the legacy ISO format, then to
+  // whatever was typed verbatim for anything else.
+  const md = /^(\d{1,2})\/(\d{1,2})$/.exec(value.trim());
+  if (md) return `${md[1].padStart(2, '0')}/${md[2].padStart(2, '0')}`;
+  const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (iso) return `${iso[2]}/${iso[3]}`;
+  return value;
 }
 
 // UI-only structural flags (like noChildAdd) can change in the code after a
