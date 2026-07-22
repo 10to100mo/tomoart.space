@@ -164,9 +164,9 @@
     }
     .row-btn:hover { color: #f87171; }
 
-    /* ── SWIPE TO DELETE / RESET ── */
+    /* ── SWIPE TO DELETE / RESET / REORDER ── */
     .item-row-wrap { position: relative; overflow: hidden; }
-    .swipe-delete-btn, .swipe-reset-btn {
+    .swipe-delete-btn, .swipe-reset-btn, .swipe-reorder-btn {
       position: absolute; top: 50%; transform: translateY(-50%);
       width: 44px; height: 76%; max-height: 44px; border-radius: 12px;
       color: #fff; border: none;
@@ -175,18 +175,18 @@
     .swipe-delete-btn svg, .swipe-reset-btn svg { width: 22px; height: 22px; }
     .swipe-delete-btn { right: 14px; background: #f96058; }
     .swipe-reset-btn { right: 68px; background: #e2a03f; }
+    .swipe-reorder-btn {
+      right: 122px; background: #3a3a3a; flex-direction: column; padding: 4px;
+    }
+    .swipe-reorder-btn button {
+      flex: 1; width: 100%; background: none; border: none; color: #fff;
+      font-size: 13px; line-height: 1; display: flex; align-items: center; justify-content: center;
+    }
+    .swipe-reorder-btn button:disabled { color: #777; }
     .item-row {
       background: #111; position: relative; z-index: 1; touch-action: pan-y;
       user-select: none; -webkit-user-select: none;
     }
-
-    .reorder-group { flex: 0 0 auto; display: flex; flex-direction: column; }
-    .reorder-btn {
-      background: none; border: none; color: #666; font-size: 10px; line-height: 1;
-      padding: 1px 4px; transition: color 0.15s;
-    }
-    .reorder-btn:hover:not(:disabled) { color: #fff; }
-    .reorder-btn:disabled { color: #262626; cursor: default; }
 
     .group-subtotal {
       padding: 0 0 4px 24px; font-size: 13px; color: #aaa; letter-spacing: 0.1em;
@@ -700,7 +700,19 @@ function renderItemList() {
     const hasChildren = isGroup && item.children.length > 0;
     const collapsed = hasChildren && !!data.collapsedGroups[item.name];
 
-    if (hasChildren && !collapsed) {
+    if (item.autoEntries && hasChildren) {
+      // The last child is always the guaranteed-blank quick-add slot — keep
+      // it visible outside the fold so a new entry can be filled in right
+      // away without expanding the group. Only the filled history collapses.
+      const blankSlot = item.children[item.children.length - 1];
+      const filledEntries = item.children.slice(0, -1);
+      group.appendChild(buildItemRow(blankSlot, 1, item.children, true));
+      if (filledEntries.length > 0 && !collapsed) {
+        filledEntries.forEach(child => {
+          group.appendChild(buildItemRow(child, 1, item.children, true));
+        });
+      }
+    } else if (hasChildren && !collapsed) {
       item.children.forEach(child => {
         group.appendChild(buildItemRow(child, 1, item.children, !!item.autoEntries));
       });
@@ -862,13 +874,16 @@ function buildItemRow(row, depth, siblingArray, forceBlankName) {
     showToast('リセットしました');
   };
 
-  const reorderGroup = document.createElement('div');
-  reorderGroup.className = 'reorder-group';
   const rowIdx = siblingArray.findIndex(r => r.id === row.id);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'item-row-wrap';
+
+  const swipeReorderBtn = document.createElement('div');
+  swipeReorderBtn.className = 'swipe-reorder-btn';
 
   const upBtn = document.createElement('button');
   upBtn.type = 'button';
-  upBtn.className = 'reorder-btn';
   upBtn.textContent = '▲';
   upBtn.title = '上に移動';
   upBtn.disabled = rowIdx <= 0;
@@ -876,17 +891,12 @@ function buildItemRow(row, depth, siblingArray, forceBlankName) {
 
   const downBtn = document.createElement('button');
   downBtn.type = 'button';
-  downBtn.className = 'reorder-btn';
   downBtn.textContent = '▼';
   downBtn.title = '下に移動';
   downBtn.disabled = rowIdx < 0 || rowIdx >= siblingArray.length - 1;
   downBtn.addEventListener('click', () => moveRow(row, depth, siblingArray, 1));
 
-  reorderGroup.append(upBtn, downBtn);
-  el.appendChild(reorderGroup);
-
-  const wrap = document.createElement('div');
-  wrap.className = 'item-row-wrap';
+  swipeReorderBtn.append(upBtn, downBtn);
 
   const swipeResetBtn = document.createElement('button');
   swipeResetBtn.type = 'button';
@@ -902,13 +912,13 @@ function buildItemRow(row, depth, siblingArray, forceBlankName) {
   swipeDeleteBtn.title = '削除';
   swipeDeleteBtn.addEventListener('click', doDelete);
 
-  wrap.append(swipeResetBtn, swipeDeleteBtn, el);
+  wrap.append(swipeReorderBtn, swipeResetBtn, swipeDeleteBtn, el);
   attachSwipeToDelete(el);
 
   return wrap;
 }
 
-const SWIPE_REVEAL = 128;
+const SWIPE_REVEAL = 176;
 
 function closeOpenSwipeRows(except) {
   document.querySelectorAll('.item-row.swipe-open').forEach(r => {
