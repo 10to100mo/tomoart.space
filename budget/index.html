@@ -355,8 +355,8 @@ function defaultTemplate() {
   return [
     { id: uid(), name: '家賃', defaultAmount: 250500, noChildAdd: true },
     { id: uid(), name: '讓一振込', defaultAmount: 150000, noChildAdd: true },
-    { id: uid(), name: '食費', defaultAmount: null },
-    { id: uid(), name: '雑費', defaultAmount: null },
+    { id: uid(), name: '食費', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+    { id: uid(), name: '雑費', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
     { id: uid(), name: '水道光熱費', defaultAmount: null },
     { id: uid(), name: '通信費', defaultAmount: null },
     { id: uid(), name: 'サブスク', defaultAmount: null, noChildAdd: true, children: [
@@ -389,7 +389,7 @@ function defaultTemplate() {
       { id: uid(), name: 'MI Card', defaultAmount: null },
       { id: uid(), name: 'JCB', defaultAmount: null }
     ]},
-    { id: uid(), name: 'Amazon定期便', defaultAmount: null, noChildAdd: true, children: [] }
+    { id: uid(), name: 'Amazon定期便', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] }
   ];
 }
 
@@ -405,7 +405,7 @@ function defaultData() {
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 
 function sanitizeTemplateItem(raw) {
-  const item = { id: raw.id || uid(), name: raw.name || '', defaultAmount: (typeof raw.defaultAmount === 'number') ? raw.defaultAmount : null, noChildAdd: !!raw.noChildAdd };
+  const item = { id: raw.id || uid(), name: raw.name || '', defaultAmount: (typeof raw.defaultAmount === 'number') ? raw.defaultAmount : null, noChildAdd: !!raw.noChildAdd, autoEntries: !!raw.autoEntries };
   if (Array.isArray(raw.children)) item.children = raw.children.map(sanitizeTemplateItem);
   return item;
 }
@@ -418,7 +418,8 @@ function sanitizeCycleItem(raw) {
     payment: ['cash', 'card'].includes(raw.payment) ? raw.payment : 'none',
     date: (typeof raw.date === 'string' && raw.date) ? raw.date : null,
     place: (typeof raw.place === 'string') ? raw.place : '',
-    noChildAdd: !!raw.noChildAdd
+    noChildAdd: !!raw.noChildAdd,
+    autoEntries: !!raw.autoEntries
   };
   if (Array.isArray(raw.children)) item.children = raw.children.map(sanitizeCycleItem);
   return item;
@@ -500,7 +501,7 @@ let currentCycle = cycleKeyForDate(new Date());
 
 function cloneTemplateToCycleItems(template) {
   return template.map(t => {
-    const item = { id: t.id, name: t.name, amount: t.defaultAmount, payment: 'none', date: null, place: '', noChildAdd: !!t.noChildAdd };
+    const item = { id: t.id, name: t.name, amount: t.defaultAmount, payment: 'none', date: null, place: '', noChildAdd: !!t.noChildAdd, autoEntries: !!t.autoEntries };
     if (Array.isArray(t.children)) item.children = cloneTemplateToCycleItems(t.children);
     return item;
   });
@@ -520,6 +521,7 @@ function syncStructuralFlags(items, templateItems) {
     const t = templateItems.find(x => x.name === item.name);
     if (!t) return;
     item.noChildAdd = !!t.noChildAdd;
+    item.autoEntries = !!t.autoEntries;
     // Non-destructive: only initialize an empty children array when the
     // item doesn't already have one (a group with real children is never
     // touched here).
@@ -636,6 +638,19 @@ function renderCycleSelect() {
   });
 }
 
+// For 買い物 log style categories (autoEntries): always keep exactly one
+// blank child ready at the end, so finishing one purchase automatically
+// opens a place for the next one. Self-healing regardless of add/delete
+// order — just enforces the invariant on every render.
+function ensureAutoEntrySlot(item) {
+  if (!Array.isArray(item.children)) item.children = [];
+  const last = item.children[item.children.length - 1];
+  if (!last || last.amount !== null) {
+    item.children.push({ id: uid(), name: '', amount: null, payment: 'none', date: null, place: '' });
+    saveData();
+  }
+}
+
 /* ── RENDER: ITEM LIST ── */
 function renderItemList() {
   const cycle = ensureCycle(currentCycle);
@@ -643,6 +658,8 @@ function renderItemList() {
   list.innerHTML = '';
 
   cycle.items.forEach(item => {
+    if (item.autoEntries) ensureAutoEntrySlot(item);
+
     const group = document.createElement('div');
     group.className = 'item-group';
     group.appendChild(buildItemRow(item, 0, cycle.items));
