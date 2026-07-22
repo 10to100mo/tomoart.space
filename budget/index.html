@@ -1015,7 +1015,22 @@ function startEditEntry(fieldsEl, row) {
       if (!form.contains(document.activeElement)) commit();
     }, 0);
   });
+
+  // iOS Safari doesn't reliably blur a focused input when tapping a
+  // non-interactive element (plain text, empty space, etc.), so focusout
+  // alone can miss it. Track this form globally and commit on any tap
+  // outside it, regardless of what was tapped.
+  openEditForm = { form, commit };
 }
+
+let openEditForm = null;
+document.addEventListener('pointerdown', (e) => {
+  if (openEditForm && !openEditForm.form.contains(e.target)) {
+    const { commit } = openEditForm;
+    openEditForm = null;
+    commit();
+  }
+});
 
 /* ── RENDER: SUMMARY ── */
 function renderSummary() {
