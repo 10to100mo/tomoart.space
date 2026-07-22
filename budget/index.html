@@ -389,7 +389,7 @@ function defaultTemplate() {
       { id: uid(), name: 'MI Card', defaultAmount: null },
       { id: uid(), name: 'JCB', defaultAmount: null }
     ]},
-    { id: uid(), name: 'Amazon定期便', defaultAmount: null }
+    { id: uid(), name: 'Amazon定期便', defaultAmount: null, noChildAdd: true, children: [] }
   ];
 }
 
@@ -520,6 +520,12 @@ function syncStructuralFlags(items, templateItems) {
     const t = templateItems.find(x => x.name === item.name);
     if (!t) return;
     item.noChildAdd = !!t.noChildAdd;
+    // Non-destructive: only initialize an empty children array when the
+    // item doesn't already have one (a group with real children is never
+    // touched here).
+    if (Array.isArray(t.children) && !Array.isArray(item.children)) {
+      item.children = [];
+    }
     if (Array.isArray(item.children) && Array.isArray(t.children)) {
       syncStructuralFlags(item.children, t.children);
     }
@@ -641,7 +647,8 @@ function renderItemList() {
     group.className = 'item-group';
     group.appendChild(buildItemRow(item, 0, cycle.items));
 
-    const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+    const isGroup = Array.isArray(item.children);
+    const hasChildren = isGroup && item.children.length > 0;
     const collapsed = hasChildren && !!data.collapsedGroups[item.name];
 
     if (hasChildren && !collapsed) {
@@ -650,7 +657,7 @@ function renderItemList() {
       });
     }
 
-    if (hasChildren) {
+    if (isGroup) {
       const subtotal = document.createElement('div');
       subtotal.className = 'group-subtotal';
       subtotal.textContent = '小計 ' + formatCurrency(groupTotal(item));
@@ -691,7 +698,7 @@ function renderItemList() {
 
 function buildItemRow(row, depth, siblingArray) {
   const el = document.createElement('div');
-  const isGroupHeader = depth === 0 && Array.isArray(row.children) && row.children.length > 0;
+  const isGroupHeader = depth === 0 && Array.isArray(row.children);
   el.className = 'item-row' + (depth > 0 ? ' depth-1' : '') + (isGroupHeader ? ' group-header' : '');
 
   const nameEl = document.createElement('span');
