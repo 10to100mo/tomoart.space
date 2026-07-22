@@ -168,11 +168,15 @@
     .item-row-wrap { position: relative; overflow: hidden; }
     .swipe-delete-btn {
       position: absolute; top: 50%; right: 14px; transform: translateY(-50%);
-      width: 40px; height: 40px; border-radius: 50%;
-      background: #c0392b; color: #fff; border: none; font-size: 16px;
+      width: 44px; height: 44px; border-radius: 12px;
+      background: #f96058; color: #fff; border: none;
       display: flex; align-items: center; justify-content: center;
     }
-    .item-row { background: #111; position: relative; z-index: 1; touch-action: pan-y; }
+    .swipe-delete-btn svg { width: 22px; height: 22px; }
+    .item-row {
+      background: #111; position: relative; z-index: 1; touch-action: pan-y;
+      user-select: none; -webkit-user-select: none;
+    }
 
     .reorder-group { flex: 0 0 auto; display: flex; flex-direction: column; }
     .reorder-btn {
@@ -804,7 +808,7 @@ function buildItemRow(row, depth, siblingArray) {
   const swipeDeleteBtn = document.createElement('button');
   swipeDeleteBtn.type = 'button';
   swipeDeleteBtn.className = 'swipe-delete-btn';
-  swipeDeleteBtn.textContent = '🗑️';
+  swipeDeleteBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>';
   swipeDeleteBtn.title = '削除';
   swipeDeleteBtn.addEventListener('click', doDelete);
 
