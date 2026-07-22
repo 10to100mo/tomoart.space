@@ -127,12 +127,12 @@
     .entry-fields { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
     .item-date {
       flex: 0 0 44px; width: 44px; font-size: 13px; color: #999; letter-spacing: 0.02em;
-      text-align: right; white-space: nowrap; overflow: hidden;
+      text-align: right; white-space: nowrap; overflow: hidden; cursor: pointer;
     }
     .item-date.empty { color: #444; }
     .item-place {
       flex: 0 0 70px; width: 70px; font-size: 13px; color: #999; letter-spacing: 0.02em;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer;
     }
     .item-place.empty { color: #444; }
 
@@ -999,10 +999,14 @@ function buildItemRow(row, depth, siblingArray, forceBlankName) {
     const dateEl = document.createElement('span');
     dateEl.className = 'item-date' + (row.date ? '' : ' empty');
     dateEl.textContent = row.date ? formatDateShort(row.date) : '–';
+    dateEl.title = 'タップで日付・場所・金額を編集';
+    dateEl.addEventListener('click', () => startEditEntry(entryFields, row));
 
     const placeEl = document.createElement('span');
     placeEl.className = 'item-place' + (row.place ? '' : ' empty');
     placeEl.textContent = row.place || '–';
+    placeEl.title = 'タップで日付・場所・金額を編集';
+    placeEl.addEventListener('click', () => startEditEntry(entryFields, row));
 
     const amountBtn = document.createElement('button');
     amountBtn.type = 'button';
