@@ -141,7 +141,7 @@
       font-size: 15px; padding: 2px 2px; color: #111; font-variant-numeric: tabular-nums;
       min-width: 90px; text-align: right; transition: border-color 0.15s, color 0.15s;
     }
-    .amount-chip.empty { color: #ccc; font-size: 13px; }
+    .amount-chip.empty { color: #bbb; font-size: 14px; }
     .amount-chip.none { border-color: #111; color: #111; }
     .amount-chip.cash { border-color: #ff6347; color: #ff6347; }
     .amount-chip.card { border-color: #00ff7f; color: #00ff7f; }
@@ -702,14 +702,19 @@ function buildItemRow(row, depth, siblingArray) {
   const amountBtn = document.createElement('button');
   amountBtn.type = 'button';
   amountBtn.className = 'amount-chip ' + row.payment + (row.amount === null ? ' empty' : '');
-  amountBtn.textContent = row.amount === null ? '未入力' : formatCurrency(row.amount);
-  amountBtn.title = 'クリックで 未選択→現金→カード を切り替え';
-  amountBtn.addEventListener('click', () => {
-    const order = ['none', 'cash', 'card'];
-    row.payment = order[(order.indexOf(row.payment) + 1) % order.length];
-    saveData();
-    renderSheet();
-  });
+  amountBtn.textContent = row.amount === null ? '✎' : formatCurrency(row.amount);
+  if (row.amount === null) {
+    amountBtn.title = 'クリックで記入';
+    amountBtn.addEventListener('click', () => startEditEntry(entryFields, row));
+  } else {
+    amountBtn.title = 'クリックで 未選択→現金→カード を切り替え';
+    amountBtn.addEventListener('click', () => {
+      const order = ['none', 'cash', 'card'];
+      row.payment = order[(order.indexOf(row.payment) + 1) % order.length];
+      saveData();
+      renderSheet();
+    });
+  }
   amountBtn.addEventListener('dblclick', () => startEditEntry(entryFields, row));
 
   entryFields.append(dateEl, placeEl, amountBtn);
@@ -853,14 +858,14 @@ function startEditEntry(fieldsEl, row) {
   const placeInput = document.createElement('input');
   placeInput.type = 'text';
   placeInput.className = 'edit-place';
-  placeInput.placeholder = '場所';
+  placeInput.placeholder = '@';
   placeInput.value = row.place || '';
 
   const amountInput = document.createElement('input');
   amountInput.type = 'number';
   amountInput.className = 'edit-amount';
   amountInput.step = '1';
-  amountInput.placeholder = '金額';
+  amountInput.placeholder = '¥';
   amountInput.value = row.amount === null ? '' : row.amount;
 
   const confirmBtn = document.createElement('button');
