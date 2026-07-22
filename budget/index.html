@@ -373,7 +373,10 @@ function defaultTemplate() {
       { id: uid(), name: 'ガス代', defaultAmount: null },
       { id: uid(), name: '電気代', defaultAmount: null }
     ]},
-    { id: uid(), name: '通信費', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+    { id: uid(), name: '通信費', defaultAmount: null, children: [
+      { id: uid(), name: '携帯代', defaultAmount: null },
+      { id: uid(), name: 'ひかり通信', defaultAmount: null }
+    ]},
     { id: uid(), name: 'サブスク', defaultAmount: null, children: [
       { id: uid(), name: 'YouTubeファミリー', defaultAmount: 2280 },
       { id: uid(), name: 'Netflix', defaultAmount: 2290 },
@@ -449,7 +452,7 @@ let data = loadData();
 // their name, but fold into their own auto-growing entry log. These run
 // on every load (template once, each cycle lazily via ensureCycle) and
 // are no-ops once already migrated, so it applies without a data reset.
-const LEAF_TO_AUTO_ENTRIES_NAMES = ['通信費', 'ART'];
+const LEAF_TO_AUTO_ENTRIES_NAMES = ['ART'];
 const GROUPED_TO_AUTO_ENTRIES_PARENTS = ['REI', 'TOMO'];
 // サブスクの各項目 is a fixed monthly cost, not a purchase log — briefly
 // made auto-growing alongside REI/TOMO, then reverted back to a plain
@@ -593,6 +596,37 @@ function migrateCycleWaterUtility(items, template) {
   item.payment = 'none';
 }
 
+// 通信費 went from a plain leaf, to a briefly auto-growing log (alongside
+// REI/TOMO), to now: named sub-items (携帯代/ひかり通信), same style as
+// 水道光熱費. Either prior shape's most recent filled entry is kept as a
+// "その他" entry so nothing already logged is lost.
+function migrateCycleCommunications(items, template) {
+  const item = items.find(i => i.name === '通信費');
+  const tmpl = template.find(t => t.name === '通信費');
+  if (!item || !tmpl || !Array.isArray(tmpl.children)) return;
+  const alreadyMigrated = Array.isArray(item.children) && item.children.some(c => c.name === '携帯代' || c.name === 'ひかり通信');
+  if (alreadyMigrated) return;
+
+  let preserved = null;
+  if (Array.isArray(item.children)) {
+    const filled = item.children.filter(c => typeof c.amount === 'number' || c.date || c.place);
+    preserved = filled[filled.length - 1] || null;
+  } else if (typeof item.amount === 'number' || item.date || item.place) {
+    preserved = { amount: item.amount, payment: item.payment, date: item.date, place: item.place };
+  }
+
+  item.children = tmpl.children.map(t => ({ id: t.id, name: t.name, amount: null, payment: 'none', date: null, place: '' }));
+  if (preserved) {
+    item.children.push({ id: uid(), name: 'その他', amount: preserved.amount, payment: preserved.payment || 'none', date: preserved.date || null, place: preserved.place || '' });
+  }
+  item.amount = null;
+  item.date = null;
+  item.place = '';
+  item.payment = 'none';
+  item.autoEntries = false;
+  item.noChildAdd = false;
+}
+
 function migrateCycleStructures(items) {
   items.forEach(item => {
     if (LEAF_TO_AUTO_ENTRIES_NAMES.includes(item.name)) {
@@ -629,6 +663,21 @@ if (waterUtilityTemplate && !Array.isArray(waterUtilityTemplate.children)) {
     { id: uid(), name: '電気代', defaultAmount: null }
   ];
   waterUtilityTemplate.defaultAmount = null;
+}
+// 通信費 used to be a single amount (then briefly an auto-growing log) —
+// split into named sub-items (携帯代/ひかり通信), same style as 水道光熱費.
+const commsTemplate = data.template.find(t => t.name === '通信費');
+if (commsTemplate) {
+  const commsHasNamedChildren = Array.isArray(commsTemplate.children) && commsTemplate.children.some(c => c.name === '携帯代' || c.name === 'ひかり通信');
+  if (!commsHasNamedChildren) {
+    commsTemplate.autoEntries = false;
+    commsTemplate.noChildAdd = false;
+    commsTemplate.children = [
+      { id: uid(), name: '携帯代', defaultAmount: null },
+      { id: uid(), name: 'ひかり通信', defaultAmount: null }
+    ];
+    commsTemplate.defaultAmount = null;
+  }
 }
 saveData();
 
@@ -762,6 +811,7 @@ function ensureCycle(key) {
     migrateCycleStructures(data.cycles[key].items);
     revertCycleStructures(data.cycles[key].items);
     migrateCycleWaterUtility(data.cycles[key].items, data.template);
+    migrateCycleCommunications(data.cycles[key].items, data.template);
     syncStructuralFlags(data.cycles[key].items, data.template);
     saveData();
   }
