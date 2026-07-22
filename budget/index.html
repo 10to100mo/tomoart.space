@@ -1426,10 +1426,10 @@ function renderSummary() {
   const cycle = ensureCycle(currentCycle);
   const cash = sumBy(cycle.items, r => r.payment === 'cash');
   const card = sumBy(cycle.items, r => r.payment === 'card');
-  const grand = sumBy(cycle.items, () => true);
-  // 残高は現金・カードで確定した支出のみを差し引く。未選択(黒)のままの
-  // 金額はまだ請求が来ていない予定額として、残高には反映しない。
-  const balance = (cycle.totalBudget || 0) - (cash + card);
+  // 支出合計・残高ともに、現金・カードで確定した支出のみを対象にする。
+  // 未選択(黒)のままの金額はまだ請求が来ていない予定額として扱い、含めない。
+  const grand = cash + card;
+  const balance = (cycle.totalBudget || 0) - grand;
 
   document.getElementById('sum-cash').textContent = formatCurrency(cash);
   document.getElementById('sum-card').textContent = formatCurrency(card);
