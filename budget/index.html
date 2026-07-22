@@ -702,7 +702,7 @@ function buildItemRow(row, depth, siblingArray) {
   const amountBtn = document.createElement('button');
   amountBtn.type = 'button';
   amountBtn.className = 'amount-chip ' + row.payment + (row.amount === null ? ' empty' : '');
-  amountBtn.textContent = row.amount === null ? '未入力' : formatCurrency(row.amount);
+  amountBtn.textContent = row.amount === null ? '–' : formatCurrency(row.amount);
   amountBtn.title = 'クリックで 未選択→現金→カード を切り替え';
   amountBtn.addEventListener('click', () => {
     const order = ['none', 'cash', 'card'];
