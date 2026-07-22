@@ -179,11 +179,17 @@
       right: 122px; background: #3a3a3a; flex-direction: column; padding: 2px 0;
     }
     .swipe-reorder-btn button {
-      flex: 1 1 0; min-height: 0; width: 100%; background: none; border: none; color: #fff;
-      font-size: 10px; line-height: 1; display: flex; align-items: center; justify-content: center;
-      box-sizing: border-box;
+      flex: 1 1 0; min-height: 0; width: 100%; background: none; border: none;
+      display: flex; align-items: center; justify-content: center;
+      box-sizing: border-box; padding: 0;
     }
-    .swipe-reorder-btn button:disabled { color: #777; }
+    .swipe-reorder-btn button .tri {
+      width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent;
+    }
+    .swipe-reorder-btn button .tri-up { border-bottom: 6px solid #fff; }
+    .swipe-reorder-btn button .tri-down { border-top: 6px solid #fff; }
+    .swipe-reorder-btn button:disabled .tri-up { border-bottom-color: #777; }
+    .swipe-reorder-btn button:disabled .tri-down { border-top-color: #777; }
     .item-row {
       background: #111; position: relative; z-index: 1; touch-action: pan-y;
       user-select: none; -webkit-user-select: none;
@@ -885,14 +891,14 @@ function buildItemRow(row, depth, siblingArray, forceBlankName) {
 
   const upBtn = document.createElement('button');
   upBtn.type = 'button';
-  upBtn.textContent = '▲';
+  upBtn.innerHTML = '<span class="tri tri-up"></span>';
   upBtn.title = '上に移動';
   upBtn.disabled = rowIdx <= 0;
   upBtn.addEventListener('click', () => moveRow(row, depth, siblingArray, -1));
 
   const downBtn = document.createElement('button');
   downBtn.type = 'button';
-  downBtn.textContent = '▼';
+  downBtn.innerHTML = '<span class="tri tri-down"></span>';
   downBtn.title = '下に移動';
   downBtn.disabled = rowIdx < 0 || rowIdx >= siblingArray.length - 1;
   downBtn.addEventListener('click', () => moveRow(row, depth, siblingArray, 1));
