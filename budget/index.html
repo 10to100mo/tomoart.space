@@ -369,14 +369,14 @@ function defaultTemplate() {
     { id: uid(), name: '水道光熱費', defaultAmount: null },
     { id: uid(), name: '通信費', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
     { id: uid(), name: 'サブスク', defaultAmount: null, noChildAdd: true, children: [
-      { id: uid(), name: 'YouTubeファミリー', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
-      { id: uid(), name: 'Netflix', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
-      { id: uid(), name: 'Amazonプライム', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
-      { id: uid(), name: 'Apple MUSIC', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
-      { id: uid(), name: 'AppleCare', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
-      { id: uid(), name: '礼のiPad', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
-      { id: uid(), name: 'Apple iCloud', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
-      { id: uid(), name: 'Claude', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] }
+      { id: uid(), name: 'YouTubeファミリー', defaultAmount: 2280 },
+      { id: uid(), name: 'Netflix', defaultAmount: 2290 },
+      { id: uid(), name: 'Amazonプライム', defaultAmount: null },
+      { id: uid(), name: 'Apple MUSIC', defaultAmount: 1680 },
+      { id: uid(), name: 'AppleCare', defaultAmount: 900 },
+      { id: uid(), name: '礼のiPad', defaultAmount: 650 },
+      { id: uid(), name: 'Apple iCloud', defaultAmount: 1500 },
+      { id: uid(), name: 'Claude', defaultAmount: 3000 }
     ]},
     { id: uid(), name: 'REI', defaultAmount: null, noChildAdd: true, children: [
       { id: uid(), name: '定期', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
@@ -444,7 +444,12 @@ let data = loadData();
 // on every load (template once, each cycle lazily via ensureCycle) and
 // are no-ops once already migrated, so it applies without a data reset.
 const LEAF_TO_AUTO_ENTRIES_NAMES = ['通信費', 'ART'];
-const GROUPED_TO_AUTO_ENTRIES_PARENTS = ['REI', 'TOMO', 'サブスク'];
+const GROUPED_TO_AUTO_ENTRIES_PARENTS = ['REI', 'TOMO'];
+// サブスクの各項目 is a fixed monthly cost, not a purchase log — briefly
+// made auto-growing alongside REI/TOMO, then reverted back to a plain
+// single-amount item per the user's request. This list reverts any
+// already-migrated data back to that shape.
+const GROUPED_REVERT_TO_LEAF_PARENTS = ['サブスク'];
 
 function migrateTemplateLeafToGroup(item) {
   if (item.autoEntries && Array.isArray(item.children)) return;
@@ -464,6 +469,20 @@ function migrateTemplateChildToGroup(parentChildren, childName) {
   parentChildren.push({
     id: matches[0].id, name: childName, defaultAmount: null,
     noChildAdd: true, autoEntries: true, children: []
+  });
+}
+
+function revertTemplateChildToLeaf(item) {
+  if (!Array.isArray(item.children)) return;
+  delete item.children;
+  item.autoEntries = false;
+}
+
+function revertTemplateStructures(items) {
+  items.forEach(item => {
+    if (GROUPED_REVERT_TO_LEAF_PARENTS.includes(item.name) && Array.isArray(item.children)) {
+      item.children.forEach(revertTemplateChildToLeaf);
+    }
   });
 }
 
@@ -527,6 +546,28 @@ function migrateCycleChildToGroup(parentChildren, childName) {
   parentChildren.push(groupItem);
 }
 
+function revertCycleChildToLeaf(item) {
+  if (!Array.isArray(item.children)) return;
+  // Keep the most recent entry that actually has a value, as the
+  // item's own directly-editable amount/date/place again.
+  const filled = item.children.filter(c => typeof c.amount === 'number' || c.date || c.place);
+  const last = filled[filled.length - 1];
+  item.amount = last ? last.amount : null;
+  item.date = last ? (last.date || null) : null;
+  item.place = last ? (last.place || '') : '';
+  item.payment = last ? (last.payment || 'none') : 'none';
+  delete item.children;
+  item.autoEntries = false;
+}
+
+function revertCycleStructures(items) {
+  items.forEach(item => {
+    if (GROUPED_REVERT_TO_LEAF_PARENTS.includes(item.name) && Array.isArray(item.children)) {
+      item.children.forEach(revertCycleChildToLeaf);
+    }
+  });
+}
+
 function migrateCycleStructures(items) {
   items.forEach(item => {
     if (LEAF_TO_AUTO_ENTRIES_NAMES.includes(item.name)) {
@@ -549,6 +590,7 @@ function migrateCycleStructures(items) {
 }
 
 migrateTemplateStructures(data.template);
+revertTemplateStructures(data.template);
 saveData();
 
 function loadData() {
@@ -679,7 +721,9 @@ function ensureCycle(key) {
     // otherwise stamp autoEntries/children onto it first, from the
     // already-migrated template, making it look pre-migrated and skipped).
     migrateCycleStructures(data.cycles[key].items);
+    revertCycleStructures(data.cycles[key].items);
     syncStructuralFlags(data.cycles[key].items, data.template);
+    saveData();
   }
   return data.cycles[key];
 }
