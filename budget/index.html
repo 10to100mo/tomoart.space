@@ -81,6 +81,27 @@
       font-size: 14px; padding: 4px 2px; color: #777; outline: none;
     }
 
+    /* ── CYCLE CALENDAR ── */
+    .cycle-calendar {
+      display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .cal-month { flex: 1 1 150px; }
+    .cal-month-label {
+      font-size: 12px; letter-spacing: 0.15em; color: #999; margin-bottom: 6px;
+    }
+    .cal-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+    }
+    .cal-weekday {
+      font-size: 11px; color: #666; text-align: center; padding-bottom: 2px;
+    }
+    .cal-day {
+      font-size: 12px; text-align: center; padding: 5px 0; color: #555;
+      font-variant-numeric: tabular-nums;
+    }
+    .cal-day.in-cycle { color: #fff; background: #262626; border-radius: 4px; }
+    .cal-day.today { border: 1px solid #fff; border-radius: 4px; }
+
     .budget-total-row {
       display: flex; align-items: center; gap: 10px; margin: 10px 0 16px;
       font-size: 16px;
@@ -278,6 +299,8 @@
       <button type="button" class="cycle-arrow" id="cycle-next">→</button>
       <select class="cycle-select" id="cycle-select"></select>
     </div>
+
+    <div class="cycle-calendar" id="cycle-calendar"></div>
 
     <div class="budget-total-row">
       <label for="total-budget-input">全体予算</label>
@@ -754,6 +777,60 @@ function cycleLabel(key) {
   if (em > 12) { em = 1; ey += 1; }
   if (ey === y) return `${y}年${m}月16日 〜 ${em}月15日`;
   return `${y}年${m}月16日 〜 ${ey}年${em}月15日`;
+}
+
+const WEEKDAY_LABELS = ['日', '月', '火', '水', '木', '金', '土'];
+
+function buildMonthGrid(year, month, inCycleStart, inCycleEnd) {
+  // month is 1-indexed
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const firstWeekday = new Date(year, month - 1, 1).getDay();
+  const today = new Date();
+  const isCurrentRealMonth = today.getFullYear() === year && today.getMonth() + 1 === month;
+
+  const monthEl = document.createElement('div');
+  monthEl.className = 'cal-month';
+
+  const label = document.createElement('div');
+  label.className = 'cal-month-label';
+  label.textContent = `${year}年${month}月`;
+  monthEl.appendChild(label);
+
+  const grid = document.createElement('div');
+  grid.className = 'cal-grid';
+  WEEKDAY_LABELS.forEach(w => {
+    const wEl = document.createElement('div');
+    wEl.className = 'cal-weekday';
+    wEl.textContent = w;
+    grid.appendChild(wEl);
+  });
+  for (let i = 0; i < firstWeekday; i++) {
+    grid.appendChild(document.createElement('div'));
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dEl = document.createElement('div');
+    dEl.className = 'cal-day';
+    dEl.textContent = d;
+    if (d >= inCycleStart && d <= inCycleEnd) dEl.classList.add('in-cycle');
+    if (isCurrentRealMonth && today.getDate() === d) dEl.classList.add('today');
+    grid.appendChild(dEl);
+  }
+  monthEl.appendChild(grid);
+  return monthEl;
+}
+
+// Shows the two real calendar months a 16日〜15日 cycle spans, with the
+// in-cycle days highlighted, so the date range at the top has a visual
+// calendar underneath it.
+function renderCalendar() {
+  const container = document.getElementById('cycle-calendar');
+  container.innerHTML = '';
+  const [y, m] = currentCycle.split('-').map(Number);
+  let ey = y, em = m + 1;
+  if (em > 12) { em = 1; ey += 1; }
+
+  container.appendChild(buildMonthGrid(y, m, 16, new Date(y, m, 0).getDate()));
+  container.appendChild(buildMonthGrid(ey, em, 1, 15));
 }
 
 let currentCycle = cycleKeyForDate(new Date());
@@ -1445,6 +1522,7 @@ function renderSummary() {
 function renderSheet() {
   ensureCycle(currentCycle);
   document.getElementById('cycle-label').textContent = cycleLabel(currentCycle);
+  renderCalendar();
   renderCycleSelect();
   renderItemList();
   renderSummary();
