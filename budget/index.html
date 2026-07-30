@@ -320,6 +320,13 @@
 
     <div class="cards-row">
       <div class="card">
+        <div class="card-label">予算 合計</div>
+        <div class="card-value total" id="budget-grand-total">¥0</div>
+      </div>
+    </div>
+
+    <div class="cards-row">
+      <div class="card">
         <div class="card-label">支出 合計</div>
         <div class="card-value total" id="grand-total">¥0</div>
       </div>
@@ -1507,6 +1514,8 @@ function renderSummary() {
   // 未選択(黒)のままの金額はまだ請求が来ていない予定額として扱い、含めない。
   const grand = cash + card;
   const balance = (cycle.totalBudget || 0) - grand;
+  // 予算合計は確定(現金・カード)未確定(未選択)を問わず、入力された金額すべての合計。
+  const budgetGrandTotal = sumBy(cycle.items, () => true);
 
   document.getElementById('sum-cash').textContent = formatCurrency(cash);
   document.getElementById('sum-card').textContent = formatCurrency(card);
@@ -1514,6 +1523,7 @@ function renderSummary() {
   balanceEl.textContent = formatCurrency(balance);
   balanceEl.className = 'card-value balance ' + (balance >= 0 ? 'positive' : 'negative');
 
+  document.getElementById('budget-grand-total').textContent = formatCurrency(budgetGrandTotal);
   document.getElementById('grand-total').textContent = formatCurrency(grand);
   document.getElementById('total-budget-input').value = cycle.totalBudget || '';
 }
