@@ -436,7 +436,9 @@ function defaultTemplate() {
       { id: uid(), name: 'MI Card', defaultAmount: null },
       { id: uid(), name: 'JCB', defaultAmount: null }
     ]},
-    { id: uid(), name: 'Amazon定期便', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] }
+    { id: uid(), name: 'Amazon定期便', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+    { id: uid(), name: '立替分', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] },
+    { id: uid(), name: '健康保険料', defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] }
   ];
 }
 
@@ -714,6 +716,21 @@ if (commsTemplate) {
     commsTemplate.defaultAmount = null;
   }
 }
+// 立替分・健康保険料 are new top-level categories, added the same
+// auto-growing-log shape a manually added item gets. Add them to the
+// template (if missing) and to every already-materialized cycle, so they
+// show up everywhere the app has been opened, not just new cycles.
+['立替分', '健康保険料'].forEach(name => {
+  if (!data.template.some(t => t.name === name)) {
+    const newId = uid();
+    data.template.push({ id: newId, name, defaultAmount: null, noChildAdd: true, autoEntries: true, children: [] });
+    Object.values(data.cycles).forEach(cycle => {
+      if (!cycle.items.some(i => i.name === name)) {
+        cycle.items.push({ id: newId, name, amount: null, payment: 'none', date: null, place: '', noChildAdd: true, autoEntries: true, children: [] });
+      }
+    });
+  }
+});
 saveData();
 
 function loadData() {
