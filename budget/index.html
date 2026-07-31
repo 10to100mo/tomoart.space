@@ -1621,6 +1621,20 @@ document.getElementById('reset-btn').addEventListener('click', () => {
 /* ── INIT ── */
 renderSheet();
 
+// If this app is open in more than one tab/window (e.g. a home screen icon
+// left open alongside a Safari tab), a change made in one place used to be
+// silently overwritten later by another still-open, now-stale tab saving
+// its own outdated copy back over it. The 'storage' event fires in every
+// OTHER same-origin tab/window whenever localStorage changes here, so
+// reloading `data` from it keeps every open instance in sync instead of
+// letting an old one clobber newer changes.
+window.addEventListener('storage', (e) => {
+  if (e.key !== STORAGE_KEY) return;
+  data = loadData();
+  renderSheet();
+  if (document.getElementById('tab-settings').classList.contains('active')) renderSettings();
+});
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').catch(() => {});
