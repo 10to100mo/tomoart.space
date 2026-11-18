@@ -112,6 +112,57 @@
     .section { display: none; padding: 52px 64px 120px; }
     .section.active { display: block; }
 
+    /* ── EXHIBITION NOTICE ── */
+    .exhibition-notice { max-width: 560px; }
+    .exh-label {
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.35em;
+      color: #aaa;
+      margin-bottom: 28px;
+    }
+    .exh-title {
+      font-size: 48px;
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+    .exh-subtitle {
+      font-size: 13px;
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      color: #666;
+      margin-bottom: 36px;
+    }
+    .exh-dates {
+      font-size: 15px;
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      line-height: 2.4;
+      margin-bottom: 36px;
+      color: #111;
+    }
+    .exh-venue {
+      font-size: 13px;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      margin-bottom: 10px;
+    }
+    .exh-venue a {
+      border-bottom: 1px solid #111;
+      padding-bottom: 1px;
+      transition: opacity 0.15s;
+    }
+    .exh-venue a:hover { opacity: 0.4; }
+    .exh-address {
+      font-size: 13px;
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      color: #888;
+      line-height: 1.9;
+    }
+
     /* ── PAINTING ── */
     .works-list { display: flex; flex-direction: column; gap: 100px; }
 
@@ -371,6 +422,21 @@
 <!-- ── CONTENT ── -->
 <main class="content">
 
+  <!-- HOME -->
+  <section id="sec-home" class="section active">
+    <div class="exhibition-notice">
+      <p class="exh-label">NOW ON VIEW</p>
+      <h2 class="exh-title">As I Am</h2>
+      <p class="exh-subtitle">TOMO EXHIBITION</p>
+      <div class="exh-dates">
+        <p>2026.12.1 (TUE) – 12.4 (FRI) &nbsp; 12:00–18:00</p>
+        <p>12.5 (SAT) &nbsp; 12:00–16:00</p>
+      </div>
+      <p class="exh-venue"><a href="https://galleryandlinks81.jp/" target="_blank" rel="noopener">GALLERY AND LINKS 81</a></p>
+      <p class="exh-address">東京都中央区銀座2-14-1 シャルル銀座ビル1F</p>
+    </div>
+  </section>
+
   <!-- PAINTING -->
   <!-- 新しい作品を上に、古い作品を下に追加してください -->
   <section id="sec-painting" class="section">
@@ -393,6 +459,10 @@
 
       <div class="cv-block">
         <p class="cv-block-title">SOLO EXHIBITIONS / 個展</p>
+        <div class="cv-item">
+          <p class="cv-en">December 2026<br>As I Am, <a href="https://galleryandlinks81.jp/" target="_blank" rel="noopener">GALLERY AND LINKS 81</a>, Tokyo</p>
+          <p class="cv-ja">2026年12月<br><a href="https://galleryandlinks81.jp/" target="_blank" rel="noopener">GALLERY AND LINKS 81</a>（東京）個展「As I Am」</p>
+        </div>
         <div class="cv-item">
           <p class="cv-en">July 2025<br>Solo Exhibition, <a href="https://galleryandlinks81.jp/" target="_blank" rel="noopener">GALLERY AND LINKS 81</a>, Tokyo</p>
           <p class="cv-ja">2025年7月<br><a href="https://galleryandlinks81.jp/" target="_blank" rel="noopener">GALLERY AND LINKS 81</a>（東京）初個展</p>
@@ -473,6 +543,7 @@ function showSection(id) {
 
 function showHome() {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-home').classList.add('active');
   document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
   window.scrollTo(0, 0);
 }
